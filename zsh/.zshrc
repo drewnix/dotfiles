@@ -31,13 +31,16 @@ ssh-add -k ~/.ssh/id_rsa > /dev/null 2>&1
 # GO Programming Language Aliases
 export GOPATH=$HOME/go
 export GOPRIVATE="cd.splunkdev.com"
-export PATH=~/bin:$PATH:$GOPATH/bin
+export PATH=~/.local/bin:$PATH:$GOPATH/bin
 export GOPROXY="https://repo.splunk.com/artifactory/go | https://proxy.golang.org | direct"
 
 # Add homebrew to path if it exists
 if [ -d "/opt/homebrew/bin" ]; then
   export PATH="/opt/homebrew/bin:$PATH"
 fi
+
+
+# Add 
 
 # Launch Starship prompt http://starship.rs
 eval "$(starship init zsh)"

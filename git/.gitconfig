@@ -1,0 +1,10 @@
+[user]
+	name = andrew@drewnix.dev
+	email = andrew@drewnix.dev
+	signingKey = ""
+[gpg]
+	program = gpg
+[commit]
+	gpgSign = false
+[tag]
+	forceSignAnnotated = false
