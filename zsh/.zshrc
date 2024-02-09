@@ -193,3 +193,6 @@ alias ksvulnl='kubectl -n kubescape get vulnerabilitymanifests --show-labels'
 #  ╚════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
 
 # This stuff gets added by third party scripts and tools, usually should be removed
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
