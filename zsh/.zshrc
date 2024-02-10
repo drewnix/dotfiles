@@ -12,9 +12,8 @@
 # ║██████████
 # ╚═════════╝
 
-# Load hidden config if it exists
-if [ -f "$HOME/.zshrc.sec" ]; then
-  source $HOME/.zshrc.sec
+if [ -f ~/.secrets ]; then
+    source ~/.secrets
 fi
 
 # add current company config if it exists
@@ -30,6 +29,7 @@ ssh-add -k ~/.ssh/id_rsa > /dev/null 2>&1
 
 # GO Programming Language Aliases
 export GOPATH=$HOME/go
+export SPLUNK_HOME=/Applications/Splunk
 export GOPRIVATE="cd.splunkdev.com"
 export PATH=~/.local/bin:$PATH:$GOPATH/bin
 export GOPROXY="https://repo.splunk.com/artifactory/go | https://proxy.golang.org | direct"
@@ -193,6 +193,4 @@ alias ksvulnl='kubectl -n kubescape get vulnerabilitymanifests --show-labels'
 #  ╚════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
 
 # This stuff gets added by third party scripts and tools, usually should be removed
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+
