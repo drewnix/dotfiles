@@ -193,4 +193,3 @@ alias ksvulnl='kubectl -n kubescape get vulnerabilitymanifests --show-labels'
 #  ╚════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
 
 # This stuff gets added by third party scripts and tools, usually should be removed
-
