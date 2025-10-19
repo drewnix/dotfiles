@@ -1,7 +1,7 @@
 # ███████╗███████╗██╗  ██╗██████╗  ██████╗
 # ╚══███╔╝██╔════╝██║  ██║██╔══██╗██╔════╝
-#   ███╔╝ ███████╗███████║██████╔╝██║     
-#  ███╔╝  ╚════██║██╔══██║██╔══██╗██║     
+#   ███╔╝ ███████╗███████║██████╔╝██║
+#  ███╔╝  ╚════██║██╔══██║██╔══██╗██║
 # ███████╗███████║██║  ██║██║  ██║╚██████╗
 # ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝
 #
@@ -11,185 +11,154 @@
 # ║█ info   █ https://github.com/drewnix/dotfiles/blob/main/README.md
 # ║██████████
 # ╚═════════╝
+#
+# Modern, modular ZSH configuration for cloud-native development
+# Optimized for: Kubernetes, Terraform, AWS, GCP, Docker, and more
 
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Secret & Company-Specific Configuration                      ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Load secrets if they exist
 if [ -f ~/.secrets ]; then
     source ~/.secrets
 fi
 
-# add current company config if it exists
+# Load company-specific config if it exists
 if [ -f "$HOME/.zshrc.spl" ]; then
   source $HOME/.zshrc.spl
 fi
 
-alias ls='ls --color'
-alias l='ls --color -l'
-alias rgr='ranger'
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ SSH Key Management                                           ║
+# ╚══════════════════════════════════════════════════════════════╝
 
-ssh-add -k ~/.ssh/id_rsa > /dev/null 2>&1
-
-# GO Programming Language Aliases
-export GOPATH=$HOME/go
-export SPLUNK_HOME=/Applications/Splunk
-export GOPRIVATE="cd.splunkdev.com"
-export PATH=~/.local/bin:$PATH:$GOPATH/bin
-export GOPROXY="https://repo.splunk.com/artifactory/go | https://proxy.golang.org | direct"
-
-# Add homebrew to path if it exists
-if [ -d "/opt/homebrew/bin" ]; then
-  export PATH="/opt/homebrew/bin:$PATH"
+# Auto-load SSH key on shell start
+if [ -f ~/.ssh/id_rsa ]; then
+  ssh-add -k ~/.ssh/id_rsa > /dev/null 2>&1
+elif [ -f ~/.ssh/id_ed25519 ]; then
+  ssh-add -k ~/.ssh/id_ed25519 > /dev/null 2>&1
 fi
 
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Environment Variables & Path Setup                           ║
+# ╚══════════════════════════════════════════════════════════════╝
 
-# Add 
+# Load environment configuration
+if [ -f ~/.config/zsh/env.zsh ]; then
+  source ~/.config/zsh/env.zsh
+fi
 
-# Launch Starship prompt http://starship.rs
-eval "$(starship init zsh)"
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Load Modular Aliases                                         ║
+# ╚══════════════════════════════════════════════════════════════╝
 
-sourceZsh() {
-    source ~/.zshrc
-    echo "New .zshrc sourced."
-}
+# General utilities (ls, cd, etc.)
+[ -f ~/.config/zsh/aliases/general.zsh ] && source ~/.config/zsh/aliases/general.zsh
 
-editZsh() {
-    vim ~/.zshrc
-    source ~/.zshrc
-    echo "New .zshrc sourced."
-}
+# Git aliases and functions
+[ -f ~/.config/zsh/aliases/git.zsh ] && source ~/.config/zsh/aliases/git.zsh
 
-# ██╗  ██╗██╗   ██╗██████╗ ███████╗ ██████╗████████╗██╗     
-# ██║ ██╔╝██║   ██║██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║     
-# █████╔╝ ██║   ██║██████╔╝█████╗  ██║        ██║   ██║     
-# ██╔═██╗ ██║   ██║██╔══██╗██╔══╝  ██║        ██║   ██║     
-# ██║  ██╗╚██████╔╝██████╔╝███████╗╚██████╗   ██║   ███████╗
-# ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝ ╚═════╝   ╚═╝   ╚══════╝
+# Kubernetes (kubectl, helm, k9s, etc.)
+[ -f ~/.config/zsh/aliases/kubernetes.zsh ] && source ~/.config/zsh/aliases/kubernetes.zsh
 
-# main
-alias k='kubectl'
-alias kl='kubectl logs'
-alias kexec='kubectl exec -it'
-alias kpf='kubectl port-forward'
-alias kaci='kubectl auth can-i'
-alias kat='kubectl attach'
-alias kapir='kubectl api-resources'
-alias kapiv='kubectl api-versions'
+# Terraform & Terragrunt
+[ -f ~/.config/zsh/aliases/terraform.zsh ] && source ~/.config/zsh/aliases/terraform.zsh
 
-# get
-alias kg='kubectl get'
-alias kgns='kubectl get ns'
-alias kgp='kubectl get pods'
-alias kgs='kubectl get secrets'
-alias kgd='kubectl get deploy'
-alias kgrs='kubectl get rs'
-alias kgss='kubectl get sts'
-alias kgds='kubectl get ds'
-alias kgcm='kubectl get configmap'
-alias kgcj='kubectl get cronjob'
-alias kgj='kubectl get job'
-alias kgsvc='kubectl get svc -o wide'
-alias kgn='kubectl get no -o wide'
-alias kgr='kubectl get roles'
-alias kgrb='kubectl get rolebindings'
-alias kgcr='kubectl get clusterroles'
-alias kgrb='kubectl get clusterrolebindings'
-alias kgsa='kubectl get sa'
-alias kgnet='kubectl get netpol'
+# AWS CLI
+[ -f ~/.config/zsh/aliases/aws.zsh ] && source ~/.config/zsh/aliases/aws.zsh
 
-# edit
-alias ke='kubectl edit'
-alias kens='kubectl edit ns'
-alias kes='kubectl edit secrets'
-alias ked='kubectl edit deploy'
-alias kers='kubectl edit rs'
-alias kess='kubectl edit sts'
-alias keds='kubectl edit ds'
-alias kesvc='kubectl edit svc'
-alias kecm='kubectl edit cm'
-alias kecj='kubectl edit cj'
-alias ker='kubectl edit roles'
-alias kerb='kubectl edit rolebindings'
-alias kecr='kubectl edit clusterroles'
-alias kerb='kubectl edit clusterrolebindings'
-alias kesa='kubectl edit sa'
-alias kenet='kubectl edit netpol'
+# GCP/gcloud
+[ -f ~/.config/zsh/aliases/gcp.zsh ] && source ~/.config/zsh/aliases/gcp.zsh
 
-# describe
-alias kd='kubectl describe'
-alias kdns='kubectl describe ns'
-alias kdp='kubectl describe pod'
-alias kds='kubectl describe secrets'
-alias kdd='kubectl describe deploy'
-alias kdrs='kubectl describe rs'
-alias kdss='kubectl describe sts'
-alias kdds='kubectl describe ds'
-alias kdsvc='kubectl describe svc'
-alias kdcm='kubectl describe cm'
-alias kdcj='kubectl describe cj'
-alias kdj='kubectl describe job'
-alias kdsa='kubectl describe sa'
-alias kdr='kubectl describe roles'
-alias kdrb='kubectl describe rolebindings'
-alias kdcr='kubectl describe clusterroles'
-alias kdcrb='kubectl describe clusterrolebindings'
-alias kdnet='kubectl describe netpol'
+# Docker & containers
+[ -f ~/.config/zsh/aliases/docker.zsh ] && source ~/.config/zsh/aliases/docker.zsh
 
-# delete
-alias kdel='kubectl delete'
-alias kdelns='kubectl delete ns'
-alias kdels='kubectl delete secrets'
-alias kdelp='kubectl delete po'
-alias kdeld='kubectl delete deployment'
-alias kdelrs='kubectl delete rs'
-alias kdelss='kubectl delete sts'
-alias kdelds='kubectl delete ds'
-alias kdelsvc='kubectl delete svc'
-alias kdelcm='kubectl delete cm'
-alias kdelcj='kubectl delete cj'
-alias kdelj='kubectl delete job'
-alias kdelr='kubectl delete roles'
-alias kdelrb='kubectl delete rolebindings'
-alias kdelcr='kubectl delete clusterroles'
-alias kdelrb='kubectl delete clusterrolebindings'
-alias kdelsa='kubectl delete sa'
-alias kdelnet='kubectl delete netpol'
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Starship Prompt                                              ║
+# ╚══════════════════════════════════════════════════════════════╝
 
-# mock
-alias kmock='kubectl create mock -o yaml --dry-run=client'
-alias kmockns='kubectl create ns mock -o yaml --dry-run=client'
-alias kmockcm='kubectl create cm mock -o yaml --dry-run=client'
-alias kmocksa='kubectl create sa mock -o yaml --dry-run=client'
+# Initialize Starship prompt (if installed)
+if command -v starship &> /dev/null; then
+  eval "$(starship init zsh)"
+fi
 
-# config
-alias kcfg='kubectl config'
-alias kcfgv='kubectl config view'
-alias kcfgns='kubectl config set-context --current --namespace'
-alias kcfgcurrent='kubectl config current-context'
-alias kcfggc='kubectl config get-contexts'
-alias kcfgsc='kubectl config set-context'
-alias kcfguc='kubectl config use-context'
-alias kcfgv='kubectl config view'
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ FZF Fuzzy Finder                                             ║
+# ╚══════════════════════════════════════════════════════════════╝
 
-# Kubescape related
-alias kssbom='kubectl -n kubescape get sbomspdxv2p3s'
-alias kssbomf='kubectl -n kubescape get sbomspdxv2p3filtereds'
-alias kssboms='kubectl -n kubescape get sbomsummaries'
-alias ksvulns='kubectl -n kubescape get vulnerabilitymanifestsummaries'
-alias ksvuln='kubectl -n kubescape get vulnerabilitymanifests'
+# FZF configuration (if installed)
+if command -v fzf &> /dev/null; then
+  # Auto-completion
+  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# Kubescape related with labels
-alias kssboml='kubectl -n kubescape get sbomspdxv2p3s --show-labels'
-alias kssbomfl='kubectl -n kubescape get sbomspdxv2p3filtereds --show-labels'
-alias kssbomsl='kubectl -n kubescape get sbomsummaries --show-labels'
-alias ksvulnsl='kubectl -n kubescape get vulnerabilitymanifestsummaries --show-labels'
-alias ksvulnl='kubectl -n kubescape get vulnerabilitymanifests --show-labels'
+  # FZF default options
+  export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --inline-info'
 
-# Banners created with https://manytools.org/hacker-tools/ascii-banner/
-#  - Font is "ANSI-Shadow"
+  # Use fd instead of find if available
+  if command -v fd &> /dev/null; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  fi
 
-#      ██╗██╗   ██╗███╗   ██╗██╗  ██╗
-#      ██║██║   ██║████╗  ██║██║ ██╔╝
-#      ██║██║   ██║██╔██╗ ██║█████╔╝ 
-# ██   ██║██║   ██║██║╚██╗██║██╔═██╗ 
-# ╚█████╔╝╚██████╔╝██║ ╚████║██║  ██╗
-#  ╚════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
+  # FZF kubectl context switcher
+  if command -v kubectl &> /dev/null; then
+    kctx-fzf() {
+      local context=$(kubectl config get-contexts -o name | fzf --height 40% --reverse)
+      if [ -n "$context" ]; then
+        kubectl config use-context "$context"
+      fi
+    }
+  fi
+fi
 
-# This stuff gets added by third party scripts and tools, usually should be removed
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ zsh-autosuggestions                                          ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Load zsh-autosuggestions (if installed)
+if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+elif [ -f ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+  source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+elif [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ zsh-syntax-highlighting                                      ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Load zsh-syntax-highlighting (must be last!)
+if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+elif [ -f ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+  source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+elif [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Welcome Message                                              ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Optional: Display a welcome message with system info
+if [ -n "$PS1" ]; then
+  # Only show on interactive shells, not in scripts or sub-shells
+  if [ -z "$DOTFILES_LOADED" ]; then
+    export DOTFILES_LOADED=1
+
+    # Uncomment to show a welcome message on shell start
+    # echo "Welcome to $(hostname)!"
+    # echo "Loaded: Kubernetes, Terraform, AWS, GCP, Docker aliases"
+
+    # Show current k8s context if configured
+    if command -v kubectl &> /dev/null && kubectl config current-context &> /dev/null; then
+      : # Silently check kubectl (starship will show this)
+    fi
+  fi
+fi
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
