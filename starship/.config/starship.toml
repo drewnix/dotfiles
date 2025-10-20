@@ -1,0 +1,208 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Starship Prompt Configuration                                ║
+# ╚══════════════════════════════════════════════════════════════╝
+#
+# Optimized for cloud-native DevOps workflows
+# Docs: https://starship.rs/config/
+
+# Overall prompt format
+format = """
+[╭─](bold green)$username$hostname$directory$git_branch$git_status$git_state
+[├─](bold green)$kubernetes$terraform$aws$gcloud$docker_context
+[╰─](bold green)$character"""
+
+# Continuation prompt
+continuation_prompt = "[∙](bold green) "
+
+# Right-side prompt
+right_format = "$cmd_duration$time"
+
+# Add newline between prompts
+add_newline = true
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Core Prompt Elements                                         ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"
+
+[username]
+show_always = false
+style_user = "bold yellow"
+style_root = "bold red"
+format = "[$user]($style)@"
+
+[hostname]
+ssh_only = true
+format = "[$hostname](bold blue) "
+disabled = false
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold cyan"
+read_only = " "
+read_only_style = "red"
+
+[time]
+disabled = false
+format = "[$time]($style) "
+style = "bold white"
+time_format = "%T"
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration]($style) "
+style = "bold yellow"
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Git Integration                                              ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+[git_branch]
+symbol = " "
+format = "on [$symbol$branch(:$remote_branch)]($style) "
+style = "bold purple"
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold red"
+conflicted = "🏳"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "$${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[git_state]
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+style = "bold yellow"
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Cloud & Infrastructure Tools                                 ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+[kubernetes]
+disabled = false
+format = 'on [⎈ $context(\($namespace\))](bold blue) '
+detect_files = ['k8s', 'Dockerfile', 'skaffold.yaml', 'kustomization.yaml']
+detect_folders = ['k8s', '.kube']
+detect_extensions = ['yaml', 'yml']
+
+[[kubernetes.contexts]]
+context_pattern = "gke_.*_(?P<cluster>[\\w-]+)"
+context_alias = "gke:$cluster"
+
+[[kubernetes.contexts]]
+context_pattern = "arn:aws:eks:.*:.*:cluster/(?P<cluster>[\\w-]+)"
+context_alias = "eks:$cluster"
+
+[terraform]
+disabled = false
+format = "via [ $version $workspace]($style) "
+detect_files = ["*.tf", "*.tfvars", ".terraform.lock.hcl"]
+detect_folders = [".terraform"]
+style = "bold 105"
+
+[aws]
+disabled = false
+format = 'on [$symbol($profile )(\($region\) )(\[$duration\] )]($style)'
+symbol = "☁️  "
+style = "bold yellow"
+
+[aws.region_aliases]
+us-east-1 = "ue1"
+us-east-2 = "ue2"
+us-west-1 = "uw1"
+us-west-2 = "uw2"
+eu-west-1 = "ew1"
+eu-west-2 = "ew2"
+eu-central-1 = "ec1"
+ap-northeast-1 = "an1"
+ap-southeast-1 = "as1"
+ap-southeast-2 = "as2"
+
+[gcloud]
+disabled = false
+format = 'on [$symbol$account(@$domain)(\($region\))]($style) '
+symbol = "️🇬️ "
+style = "bold blue"
+
+[gcloud.region_aliases]
+us-central1 = "uc1"
+us-east1 = "ue1"
+us-west1 = "uw1"
+europe-west1 = "ew1"
+asia-northeast1 = "an1"
+
+[docker_context]
+disabled = false
+format = "via [$symbol$context]($style) "
+symbol = " "
+style = "bold blue"
+only_with_files = true
+detect_files = ['docker-compose.yml', 'docker-compose.yaml', 'Dockerfile']
+detect_folders = []
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Programming Languages                                        ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+[python]
+symbol = " "
+format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+style = "yellow bold"
+pyenv_version_name = false
+pyenv_prefix = "pyenv "
+
+[nodejs]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold green"
+
+[golang]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold cyan"
+
+[rust]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+[java]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Package Managers                                             ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+[package]
+disabled = false
+format = "is [$symbol$version]($style) "
+symbol = "📦 "
+style = "208 bold"
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Disabled Modules (uncomment to enable)                       ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+[battery]
+disabled = true
+
+[memory_usage]
+disabled = true
+threshold = 75
+format = "via $symbol[$ram_pct]($style) "
+symbol = " "
+style = "bold dimmed white"
