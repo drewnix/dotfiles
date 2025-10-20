@@ -368,3 +368,35 @@ node_modules
 psd
 thumb
 sketch
+
+### Claude Code Sessions ###
+# Per-project state files (created by setup-claude in project directories)
+# These are NOT in the dotfiles repo, but adding pattern for clarity
+.claude/sessions-state.json
+.claude/sessions-state.json.tmp
+
+### Vim ###
+# vim-plug plugin directory (auto-installed on first launch)
+vim/.vim/plugged/
+
+# vim-plug itself (auto-downloaded by bootstrap code in .vimrc)
+vim/.vim/autoload/plug.vim
+
+# Persistent undo files (generated at runtime)
+vim/.vim/undodir/
+
+# Vim swap files (disabled in config, but just in case)
+*.swp
+*.swo
+*~
+
+# Vim session files
+Session.vim
+.session
+
+# netrw history
+.netrwhist
+
+# Vim backup files (disabled in config)
+*~
+*.bak
