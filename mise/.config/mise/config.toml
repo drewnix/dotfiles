@@ -1,0 +1,77 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ mise Configuration                                           ║
+# ╚══════════════════════════════════════════════════════════════╝
+#
+# mise (https://mise.jdx.dev) - Fast polyglot version manager
+# Replaces asdf with better performance and more features
+
+# Experimental features
+experimental = false
+
+# Verbose output
+verbose = false
+
+# Always keep downloads
+always_keep_download = false
+
+# Automatically install missing tools when entering a directory
+auto_install = true
+
+# Use legacy version files (.node-version, .python-version, etc.)
+legacy_version_file = true
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Tool Configuration                                           ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# You can define global tool versions here instead of .tool-versions
+# Uncomment and modify as needed:
+
+# [tools]
+# nodejs = "20.11.0"
+# python = "3.12.1"
+# golang = "1.21.6"
+# terraform = "latest"
+# kubectl = "latest"
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Environment Variables                                        ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# mise can manage environment variables too
+# [env]
+# NODE_ENV = "development"
+# GO111MODULE = "on"
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Aliases (optional)                                           ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# [aliases]
+# nodejs = { "lts" = "20" }
+# python = { "latest" = "3.12" }
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Plugin Configuration                                         ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Disable specific plugins if needed
+# [plugins]
+# python = { repo = "https://github.com/asdf-community/asdf-python" }
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Settings                                                     ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+[settings]
+# Number of jobs to run in parallel
+jobs = 4
+
+# Disable version checking
+disable_version_check = false
+
+# Disable telemetry
+disable_telemetry = true
+
+# Log level: error, warn, info, debug, trace
+log_level = "info"
