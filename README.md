@@ -1,5 +1,6 @@
 # Drewnix Dotfiles
 
+```
 ██████╗ ██████╗ ███████╗██╗    ██╗███╗   ██╗██╗██╗  ██╗
 ██╔══██╗██╔══██╗██╔════╝██║    ██║████╗  ██║██║╚██╗██╔╝
 ██║  ██║██████╔╝█████╗  ██║ █╗ ██║██╔██╗ ██║██║ ╚███╔╝
@@ -7,6 +8,7 @@
 ██████╔╝██║  ██║███████╗╚███╔███╔╝██║ ╚████║██║██╔╝ ██╗
 ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚══╝╚══╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
 dotfiles
+```
 
 Here are my dotfiles, which are mostly optimized for cloud-native development and DevOps workflows based around Kubernetes, Terraform, AWS, GCP, and Docker.
 
