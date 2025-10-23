@@ -125,12 +125,28 @@ fi
 
 # eza (modern ls replacement) - if installed
 if command -v eza &> /dev/null; then
-  alias ls='eza --icons'
-  alias l='eza -l --icons'
-  alias la='eza -la --icons'
-  alias ll='eza -l --icons'
-  alias lt='eza -l --sort=modified --icons'
+  # Basic ls replacements with icons and group directories first
+  alias ls='eza --icons --group-directories-first'
+  alias l='eza -l --icons --group-directories-first --git'
+  alias la='eza -la --icons --group-directories-first --git'
+  alias ll='eza -l --icons --group-directories-first --git'
+  alias lsa='eza -lah --icons --group-directories-first --git'
+
+  # Time-based listings
+  alias lt='eza -l --sort=modified --icons --group-directories-first --git'
+  alias lm='eza -l --sort=modified --icons --group-directories-first --git'
+  alias lr='eza -lR --icons --group-directories-first'
+
+  # Size sorting
+  alias lsize='eza -l --sort=size --icons --group-directories-first --git'
+
+  # Tree views
   alias tree='eza --tree --icons'
+  alias tree2='eza --tree --level=2 --icons'
+  alias tree3='eza --tree --level=3 --icons'
+
+  # Git-focused view
+  alias lg='eza -l --git --git-ignore --icons --group-directories-first'
 fi
 
 # ╔══════════════════════════════════════════════════════════════╗

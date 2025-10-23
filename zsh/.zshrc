@@ -160,5 +160,15 @@ if [ -n "$PS1" ]; then
   fi
 fi
 
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Local Customizations                                         ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Load local customizations last (overrides everything)
+# This file is not tracked in git - create it for environment-specific config
+if [ -f "$HOME/.zshrc.local" ]; then
+  source "$HOME/.zshrc.local"
+fi
+
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"

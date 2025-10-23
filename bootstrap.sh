@@ -171,14 +171,59 @@ install_essentials() {
         install_pkg bat "bat (better cat)"
     fi
 
-    # eza - not in all repos, install from GitHub releases if needed
+    # eza - modern ls replacement with icons and git integration
     if ! command_exists eza; then
-        if [[ "$PKG_MANAGER" == "brew" ]]; then
-            brew install eza
-        else
-            warning "eza not in repositories, skipping (optional)"
-            info "To install eza manually: https://github.com/eza-community/eza/releases"
+        info "Installing eza..."
+        case $PKG_MANAGER in
+            brew)
+                brew install eza
+                ;;
+            apt)
+                # Ubuntu 24.04+ / Debian 13+ have eza in repos
+                if sudo apt install -y eza 2>/dev/null; then
+                    success "eza installed from apt"
+                else
+                    # Fallback: install from GitHub releases
+                    warning "eza not in apt repos, installing from GitHub..."
+                    EZA_VERSION=$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest | grep tag_name | cut -d '"' -f 4)
+                    curl -L "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-gnu.tar.gz" -o eza.tar.gz
+                    tar xzf eza.tar.gz
+                    sudo mv eza /usr/local/bin/
+                    rm eza.tar.gz
+                fi
+                ;;
+            dnf)
+                # Try dnf first (newer Fedora versions may have it)
+                if sudo dnf install -y eza 2>/dev/null; then
+                    success "eza installed from dnf"
+                else
+                    # Fallback: install from GitHub releases
+                    warning "eza not in dnf repos, installing from GitHub..."
+                    EZA_VERSION=$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest | grep tag_name | cut -d '"' -f 4)
+                    curl -L "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-gnu.tar.gz" -o eza.tar.gz
+                    tar xzf eza.tar.gz
+                    sudo mv eza /usr/local/bin/
+                    rm eza.tar.gz
+                fi
+                ;;
+            pacman)
+                sudo pacman -S --noconfirm eza
+                ;;
+            *)
+                warning "Installing eza from GitHub releases..."
+                EZA_VERSION=$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest | grep tag_name | cut -d '"' -f 4)
+                curl -L "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-gnu.tar.gz" -o eza.tar.gz
+                tar xzf eza.tar.gz
+                sudo mv eza /usr/local/bin/
+                rm eza.tar.gz
+                ;;
+        esac
+
+        if command_exists eza; then
+            success "eza installed successfully"
         fi
+    else
+        success "eza already installed"
     fi
 
     success "Essential tools installed"

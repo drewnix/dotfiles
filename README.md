@@ -38,7 +38,10 @@ Here are my dotfiles, which are mostly optimized for cloud-native development an
 - **Starship** - Beautiful, fast, customizable prompt
 - **fzf** - Fuzzy finder integration for contexts, files, history
 - **mise** - Lightning-fast version manager (10-100x faster than asdf)
-- **bat**, **eza**, **fd**, **ripgrep** - Modern replacements for cat, ls, find, grep
+- **eza** - Modern ls replacement with icons, git integration, and smart directory grouping
+- **bat** - Syntax-highlighted cat alternative
+- **fd** - Fast and user-friendly find replacement
+- **ripgrep** - Lightning-fast grep alternative
 
 ### Smart Features
 
@@ -90,14 +93,7 @@ sudo dnf install stow
 # 2. Clone dotfiles
 git clone https://github.com/drewnix/dotfiles.git ~/dotfiles
 cd ~/dotfiles
-                                                      
-██████╗ ██████╗███████████████████╗    ██████████████╗
-██╔══████╔═══██╚══██╔══██╔════████║    ██╔════██╔════╝
-██║  ████║   ██║  ██║  █████╗ ████║    █████╗ ███████╗
-██║  ████║   ██║  ██║  ██╔══╝ ████║    ██╔══╝ ╚════██║
-██████╔╚██████╔╝  ██║  ██║    ███████████████████████║
-╚═════╝ ╚═════╝   ╚═╝  ╚═╝    ╚═╚══════╚══════╚══════╝
-                                                      
+
 # 3. Install specific packages
 ./dotfiles.sh zsh git tmux
 
