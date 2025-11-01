@@ -26,6 +26,7 @@ ALL_PACKAGES=(
     tmux
     vim
     ranger
+    yazi
     aws
     bash
     fish
@@ -41,9 +42,9 @@ DEFAULT_PACKAGES=(
     tmux
     vim
     ranger
+    yazi
     starship
     mise
-    claude
 )
 
 info() {
@@ -102,7 +103,7 @@ for PKG in "${PACKAGES[@]}"; do
     # Check if package directory exists
     if [ ! -d "$PKG" ]; then
         warning "Package directory '$PKG' not found, skipping..."
-        ((SKIP_COUNT++))
+        SKIP_COUNT=$((SKIP_COUNT + 1))
         continue
     fi
 
@@ -116,7 +117,7 @@ for PKG in "${PACKAGES[@]}"; do
         warning "Conflicts found with package '$PKG':"
         echo "$CONFLICTS" | sed 's/^/  /'
         warning "Skipping $PKG (resolve conflicts manually)"
-        ((CONFLICT_COUNT++))
+        CONFLICT_COUNT=$((CONFLICT_COUNT + 1))
         echo ""
         continue
     fi
@@ -124,10 +125,10 @@ for PKG in "${PACKAGES[@]}"; do
     # No conflicts, proceed with stowing
     if stow --restow --no-folding --verbose=1 "$PKG" 2>&1 | grep -v "BUG in find_stowed_path"; then
         info "✓ Successfully stowed: $PKG"
-        ((SUCCESS_COUNT++))
+        SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
     else
         warning "Failed to stow: $PKG"
-        ((SKIP_COUNT++))
+        SKIP_COUNT=$((SKIP_COUNT + 1))
     fi
 
     echo ""

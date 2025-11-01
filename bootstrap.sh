@@ -226,6 +226,56 @@ install_essentials() {
         success "eza already installed"
     fi
 
+    # yazi - blazing fast terminal file manager
+    install_pkg yazi "yazi (file manager)"
+
+    # zoxide - smarter cd command
+    install_pkg zoxide "zoxide (smart cd)"
+
+    # Yazi dependencies for enhanced functionality
+    install_pkg jq "jq (JSON processor)"
+
+    # ffmpeg for video thumbnails
+    install_pkg ffmpeg "ffmpeg (media processing)"
+
+    # 7zip for archive previews
+    if [[ "$PKG_MANAGER" == "brew" ]]; then
+        install_pkg sevenzip "7zip (archive support)"
+    elif [[ "$PKG_MANAGER" == "apt" ]]; then
+        install_pkg p7zip-full "7zip (archive support)"
+    elif [[ "$PKG_MANAGER" == "dnf" ]]; then
+        install_pkg p7zip "7zip (archive support)"
+    elif [[ "$PKG_MANAGER" == "pacman" ]]; then
+        install_pkg p7zip "7zip (archive support)"
+    fi
+
+    # poppler for PDF text extraction
+    if [[ "$PKG_MANAGER" == "brew" ]]; then
+        install_pkg poppler "poppler (PDF support)"
+    elif [[ "$PKG_MANAGER" == "apt" ]]; then
+        install_pkg poppler-utils "poppler (PDF support)"
+    elif [[ "$PKG_MANAGER" == "dnf" ]]; then
+        install_pkg poppler-utils "poppler (PDF support)"
+    elif [[ "$PKG_MANAGER" == "pacman" ]]; then
+        install_pkg poppler "poppler (PDF support)"
+    fi
+
+    # ImageMagick for image manipulation
+    install_pkg imagemagick "ImageMagick (image processing)"
+
+    # Image preview for yazi - chafa for ASCII art previews
+    install_pkg chafa "chafa (image previews)"
+
+    # ueberzugpp for better image previews (if available)
+    if [[ "$PKG_MANAGER" == "brew" ]]; then
+        install_pkg ueberzugpp "ueberzugpp (image previews)" || warning "ueberzugpp not available, using chafa"
+    elif [[ "$PKG_MANAGER" == "dnf" ]]; then
+        # Fedora might have it in COPR or we skip it
+        install_pkg ueberzugpp "ueberzugpp (image previews)" || warning "ueberzugpp not in repos, using chafa"
+    elif [[ "$PKG_MANAGER" == "pacman" ]]; then
+        install_pkg ueberzug "ueberzug (image previews)" || warning "ueberzug not available, using chafa"
+    fi
+
     success "Essential tools installed"
 }
 
@@ -476,6 +526,16 @@ stow_dotfiles() {
     "$DOTFILES_DIR/dotfiles.sh"
 
     success "Dotfiles linked"
+
+    # Install yazi plugins if yazi is installed
+    if command_exists yazi; then
+        info "Installing yazi plugins and themes..."
+        if [ -f "$DOTFILES_DIR/yazi/install-plugins.sh" ]; then
+            bash "$DOTFILES_DIR/yazi/install-plugins.sh"
+        else
+            warning "Yazi plugin installer not found, skipping..."
+        fi
+    fi
 }
 
 # ╔══════════════════════════════════════════════════════════════╗

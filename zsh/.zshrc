@@ -74,6 +74,9 @@ fi
 # Docker & containers
 [ -f ~/.config/zsh/aliases/docker.zsh ] && source ~/.config/zsh/aliases/docker.zsh
 
+# Yazi file manager
+[ -f ~/.config/zsh/aliases/yazi.zsh ] && source ~/.config/zsh/aliases/yazi.zsh
+
 # ╔══════════════════════════════════════════════════════════════╗
 # ║ Starship Prompt                                              ║
 # ╚══════════════════════════════════════════════════════════════╝

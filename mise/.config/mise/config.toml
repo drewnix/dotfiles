@@ -5,20 +5,7 @@
 # mise (https://mise.jdx.dev) - Fast polyglot version manager
 # Replaces asdf with better performance and more features
 
-# Experimental features
-experimental = false
-
-# Verbose output
-verbose = false
-
-# Always keep downloads
-always_keep_download = false
-
-# Automatically install missing tools when entering a directory
-auto_install = true
-
-# Use legacy version files (.node-version, .python-version, etc.)
-legacy_version_file = true
+# Configuration moved to [settings] section below
 
 # ╔══════════════════════════════════════════════════════════════╗
 # ║ Tool Configuration                                           ║
@@ -67,11 +54,14 @@ legacy_version_file = true
 # Number of jobs to run in parallel
 jobs = 4
 
-# Disable version checking
-disable_version_check = false
-
-# Disable telemetry
-disable_telemetry = true
-
 # Log level: error, warn, info, debug, trace
 log_level = "info"
+
+# Automatically install missing tools when entering a directory
+yes = true
+
+# Use legacy version files (.node-version, .python-version, etc.)
+legacy_version_file = true
+
+# Disable experimental features warnings
+experimental = false

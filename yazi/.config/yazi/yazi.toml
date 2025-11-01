@@ -1,0 +1,96 @@
+# Yazi Configuration
+# See: https://yazi-rs.github.io/docs/configuration/yazi
+
+[mgr]
+# Show hidden files by default (essential for dotfiles work)
+show_hidden = true
+
+# Natural sorting for intuitive file ordering
+sort_by = "natural"
+sort_sensitive = false
+sort_reverse = false
+sort_dir_first = true
+
+# Display file sizes in the file list
+linemode = "size"
+
+# Ratio of parent:current:preview panels [1, 4, 3] = 1/8 : 1/2 : 3/8
+ratio = [1, 4, 3]
+
+# Show symlink targets in file list
+show_symlink = true
+
+[preview]
+# High-quality image previews
+max_width = 1000
+max_height = 1000
+image_quality = 75
+
+# Lanczos3 filter for best image quality (slower but sharper)
+image_filter = "lanczos3"
+
+# Minimal delay for responsive scrolling
+image_delay = 30
+
+# Code preview settings
+tab_size = 2
+wrap = "no"
+
+# Enable preview caching for better performance
+cache_dir = ""
+
+[opener]
+# Custom file openers - adjust based on your preferred applications
+# These are sensible defaults for Linux
+edit = [
+  { run = '${EDITOR:-vim} "$@"', block = true, for = "linux" },
+]
+open = [
+  { run = 'xdg-open "$@"', desc = "Open with default app", for = "linux" },
+]
+reveal = [
+  { run = 'xdg-open "$(dirname "$0")"', desc = "Reveal in file manager", for = "linux" },
+]
+
+[tasks]
+# Task concurrency - adjust based on your system
+micro_workers = 10
+macro_workers = 25
+
+# Suppress preload tasks from task list (reduces clutter)
+suppress_preload = true
+
+[plugin]
+# Git integration - shows file status in linemode
+prepend_fetchers = [
+  { id = "git", name = "*", run = "git" },
+  { id = "git", name = "*/", run = "git" },
+]
+
+# Custom previewers for enhanced file type support
+prepend_previewers = [
+  # Archives
+  { mime = "application/zip", run = "archive" },
+  { mime = "application/x-tar", run = "archive" },
+  { mime = "application/x-7z-compressed", run = "archive" },
+  { mime = "application/x-rar", run = "archive" },
+  { mime = "application/gzip", run = "archive" },
+
+  # Media files (requires mediainfo plugin)
+  { mime = "video/*", run = "mediainfo" },
+  { mime = "audio/*", run = "mediainfo" },
+
+  # Documents
+  { mime = "application/pdf", run = "pdf" },
+
+  # Markdown, JSON, CSV use yazi's built-in previewer with bat/hexyl
+  # No custom previewer needed - yazi handles these by default
+]
+
+[input]
+# Cursor options for file renaming/creation
+cursor_blink = true
+
+[log]
+# Logging for debugging (use ~/.local/state/yazi/yazi.log)
+enabled = false

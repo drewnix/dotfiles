@@ -46,8 +46,7 @@ Plug 'JuliaLang/julia-vim'                             " Julia (keeping from old
 
 " Color schemes
 Plug 'morhetz/gruvbox'           " Warm, retro aesthetic (most popular)
-Plug 'folke/tokyonight.nvim'     " Modern clean aesthetic
-Plug 'catppuccin/vim', { 'as': 'catppuccin' }  " Soothing pastels
+Plug 'catppuccin/vim', { 'as': 'catppuccin' }  " Soothing pastels (mocha is dark like tokyo-night)
 
 call plug#end()
 " }}}
@@ -107,15 +106,14 @@ endif
 
 " Set colorscheme
 set background=dark
-colorscheme gruvbox
 
-" Gruvbox customization
-let g:gruvbox_contrast_dark = 'medium'  " Options: soft, medium, hard
-let g:gruvbox_italic = 1
+" Catppuccin Mocha - dark theme similar to Tokyo Night
+colorscheme catppuccin_mocha
 
 " Alternative colorschemes (uncomment to switch):
-" colorscheme tokyonight-storm
-" colorscheme catppuccin-mocha
+" colorscheme gruvbox
+" colorscheme catppuccin_frappe
+" colorscheme catppuccin_macchiato
 " }}}
 
 " PLATFORM-SPECIFIC SETTINGS {{{
@@ -223,7 +221,7 @@ nmap <Leader>d :ALEDetail<CR>
 " Status line configuration
 " -----------------------------------------------------------------------------
 let g:lightline = {
-\   'colorscheme': 'gruvbox',
+\   'colorscheme': 'catppuccin_mocha',
 \   'active': {
 \     'left': [ ['mode', 'paste'],
 \               ['gitbranch', 'readonly', 'filename', 'modified'] ],

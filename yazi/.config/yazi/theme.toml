@@ -1,0 +1,37 @@
+# Yazi Theme Configuration
+# See: https://yazi-rs.github.io/docs/configuration/theme
+
+# Use Tokyo Night flavor for consistent terminal aesthetics
+# Install with: ya pkg add BennyOe/tokyo-night
+[flavor]
+dark = "tokyo-night"
+
+# Optional: Specify a light theme for automatic switching
+# light = "tokyonight-day"
+
+# Custom overrides to Tokyo Night theme
+# Uncomment and modify these to override specific elements while keeping the flavor
+
+# [manager]
+# # Make hovered item more prominent
+# hovered = { reversed = true, bold = true }
+
+# [status]
+# # Customize status bar separator
+# separator_style = { fg = "darkgray" }
+
+# [filetype]
+# # Override specific file type rules
+# rules = [
+#   { name = "*.env", fg = "yellow" },
+#   { name = "*.secret", fg = "red" },
+# ]
+
+# The flavor provides:
+# - Syntax highlighting via tmTheme for code previews
+# - Consistent color scheme matching Tokyo Night terminal theme
+# - Icons and borders styled appropriately
+# - Status bar and selection colors
+
+# After installing the flavor, syntax highlighting works automatically
+# No additional tmTheme configuration needed

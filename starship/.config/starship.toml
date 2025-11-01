@@ -4,19 +4,31 @@
 #
 # Docs: https://starship.rs/config/
 
-# Overall prompt format
+# Overall prompt format - two lines (info then prompt character)
 format = """
-[╭─](bold green)$username$hostname$directory$git_branch$git_status$git_state
-[├─](bold green)$kubernetes$terraform$aws$gcloud$docker_context
-[╰─](bold green)$character"""
-
-# Continuation prompt
-continuation_prompt = "[∙](bold green) "
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$git_state\
+$kubernetes\
+$terraform\
+$aws\
+$gcloud\
+$docker_context\
+$python\
+$nodejs\
+$golang\
+$rust\
+$java\
+$package
+$character"""
 
 # Right-side prompt
-right_format = "$cmd_duration$time"
+right_format = "$cmd_duration"
 
-# Add newline between prompts
+# Add newline between prompts for breathing room
 add_newline = true
 
 # ╔══════════════════════════════════════════════════════════════╗
@@ -48,7 +60,7 @@ read_only = " "
 read_only_style = "red"
 
 [time]
-disabled = false
+disabled = true  # Disabled for cleaner prompt
 format = "[$time]($style) "
 style = "bold white"
 time_format = "%T"
@@ -91,10 +103,11 @@ style = "bold yellow"
 
 [kubernetes]
 disabled = false
-format = 'on [⎈ $context(\($namespace\))](bold blue) '
-detect_files = ['k8s', 'Dockerfile', 'skaffold.yaml', 'kustomization.yaml']
-detect_folders = ['k8s', '.kube']
-detect_extensions = ['yaml', 'yml']
+format = '[⎈ $context(\($namespace\))](bold blue) '
+# Only show when in k8s-related directories
+detect_files = ['skaffold.yaml', 'kustomization.yaml', 'k8s.yaml']
+detect_folders = ['k8s']
+detect_extensions = []
 
 [[kubernetes.contexts]]
 context_pattern = "gke_.*_(?P<cluster>[\\w-]+)"
@@ -106,15 +119,15 @@ context_alias = "eks:$cluster"
 
 [terraform]
 disabled = false
-format = "via [ $version $workspace]($style) "
+format = "[ $workspace]($style) "
 detect_files = ["*.tf", "*.tfvars", ".terraform.lock.hcl"]
 detect_folders = [".terraform"]
 style = "bold 105"
 
 [aws]
 disabled = false
-format = 'on [$symbol($profile )(\($region\) )(\[$duration\] )]($style)'
-symbol = "☁️  "
+format = '[$symbol$profile(\($region\))]($style) '
+symbol = "☁️ "
 style = "bold yellow"
 
 [aws.region_aliases]
@@ -131,8 +144,8 @@ ap-southeast-2 = "as2"
 
 [gcloud]
 disabled = false
-format = 'on [$symbol$account(@$domain)(\($region\))]($style) '
-symbol = "️🇬️ "
+format = '[$symbol$project(\($region\))]($style) '
+symbol = "️G☁️ "
 style = "bold blue"
 
 [gcloud.region_aliases]
@@ -144,7 +157,7 @@ asia-northeast1 = "an1"
 
 [docker_context]
 disabled = false
-format = "via [$symbol$context]($style) "
+format = "[$symbol$context]($style) "
 symbol = " "
 style = "bold blue"
 only_with_files = true
@@ -157,29 +170,29 @@ detect_folders = []
 
 [python]
 symbol = " "
-format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 style = "yellow bold"
 pyenv_version_name = false
 pyenv_prefix = "pyenv "
 
 [nodejs]
 symbol = " "
-format = "via [$symbol($version )]($style)"
+format = "[$symbol($version )]($style)"
 style = "bold green"
 
 [golang]
 symbol = " "
-format = "via [$symbol($version )]($style)"
+format = "[$symbol($version )]($style)"
 style = "bold cyan"
 
 [rust]
 symbol = " "
-format = "via [$symbol($version )]($style)"
+format = "[$symbol($version )]($style)"
 style = "bold red"
 
 [java]
 symbol = " "
-format = "via [$symbol($version )]($style)"
+format = "[$symbol($version )]($style)"
 style = "bold red"
 
 # ╔══════════════════════════════════════════════════════════════╗
@@ -188,7 +201,7 @@ style = "bold red"
 
 [package]
 disabled = false
-format = "is [$symbol$version]($style) "
+format = "[$symbol$version]($style) "
 symbol = "📦 "
 style = "208 bold"
 

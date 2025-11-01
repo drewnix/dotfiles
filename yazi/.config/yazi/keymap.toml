@@ -1,0 +1,96 @@
+# Yazi Keybindings
+# See: https://yazi-rs.github.io/docs/configuration/keymap
+
+[mgr]
+# Using prepend_keymap preserves all default bindings while adding custom ones
+prepend_keymap = [
+  # Vim-style directory bookmarks
+  { on = ["g", "h"], run = "cd ~", desc = "Go to home directory" },
+  { on = ["g", "c"], run = "cd ~/.config", desc = "Go to .config" },
+  { on = ["g", "d"], run = "cd ~/Downloads", desc = "Go to Downloads" },
+  { on = ["g", "p"], run = "cd ~/Projects", desc = "Go to Projects" },
+  { on = ["g", "w"], run = "cd ~/work", desc = "Go to work directory" },
+  { on = ["g", "t"], run = "cd /tmp", desc = "Go to /tmp" },
+  { on = ["g", "D"], run = "cd ~/dotfiles", desc = "Go to dotfiles" },
+
+  # Shell integration
+  { on = "!", run = 'shell "$SHELL" --block', desc = "Open shell in current directory" },
+
+  # Plugin bindings - smart-enter (open files or enter directories)
+  { on = "<Enter>", run = "plugin smart-enter", desc = "Smart enter: open files or enter directories" },
+
+  # Enhanced selection
+  { on = ["<C-a>"], run = ["select_all", "yank"], desc = "Select all and yank" },
+
+  # FZF search integration (requires fr.yazi plugin)
+  { on = ["f", "r"], run = "plugin fr rg", desc = "Search file contents with ripgrep" },
+  { on = ["f", "a"], run = "plugin fr rga", desc = "Search all files with ripgrep-all" },
+  { on = ["f", "f"], run = "plugin fr fd", desc = "Find files with fd" },
+
+  # Git integration (requires lazygit)
+  { on = ["g", "l"], run = 'shell "lazygit" --block', desc = "Open lazygit in current directory" },
+  { on = ["g", "s"], run = 'shell "git status" --block', desc = "Show git status" },
+
+  # Copy file path to clipboard (Wayland)
+  { on = ["Y"], run = [
+    'shell --confirm -- for path in "$@"; do echo "file://$path"; done | wl-copy -t text/uri-list',
+  ], desc = "Copy file path to clipboard (Wayland)" },
+
+  # Copy file path to clipboard (X11)
+  { on = ["<C-y>"], run = [
+    'shell --confirm -- for path in "$@"; do echo "$path"; done | xclip -selection clipboard',
+  ], desc = "Copy file path to clipboard (X11)" },
+
+  # Create and edit new file
+  { on = ["a"], run = "create", desc = "Create new file or directory" },
+
+  # Better visual mode
+  { on = ["V"], run = "visual_mode", desc = "Enter visual mode" },
+  { on = ["<Esc>"], run = "escape", desc = "Exit visual mode / Cancel" },
+
+  # Quick parent directory navigation
+  { on = ["H"], run = "leave", desc = "Go to parent directory" },
+  { on = ["L"], run = "enter", desc = "Enter directory or open file" },
+
+  # Sorting shortcuts
+  { on = ["S", "a"], run = "sort alphabetical", desc = "Sort alphabetically" },
+  { on = ["S", "s"], run = "sort size", desc = "Sort by size" },
+  { on = ["S", "m"], run = "sort modified", desc = "Sort by modified time" },
+  { on = ["S", "n"], run = "sort natural", desc = "Sort naturally" },
+  { on = ["S", "r"], run = "sort reverse", desc = "Reverse sort order" },
+]
+
+[tasks]
+prepend_keymap = [
+  { on = "<Esc>", run = "close", desc = "Close task manager" },
+  { on = "q", run = "close", desc = "Close task manager" },
+  { on = "w", run = "close", desc = "Close task manager" },
+]
+
+[select]
+prepend_keymap = [
+  { on = "<Esc>", run = "close", desc = "Cancel selection" },
+  { on = "q", run = "close", desc = "Cancel selection" },
+]
+
+[input]
+prepend_keymap = [
+  # Vim-like editing in input mode
+  { on = "<C-a>", run = "move -999", desc = "Move to beginning of line" },
+  { on = "<C-e>", run = ["move 999"], desc = "Move to end of line" },
+  { on = "<C-u>", run = "kill bol", desc = "Delete to beginning of line" },
+  { on = "<C-k>", run = "kill eol", desc = "Delete to end of line" },
+  { on = "<C-w>", run = "kill back-word", desc = "Delete previous word" },
+]
+
+[completion]
+prepend_keymap = [
+  { on = "<Tab>", run = "close --submit", desc = "Accept completion" },
+  { on = "<Esc>", run = "close", desc = "Cancel completion" },
+]
+
+[help]
+prepend_keymap = [
+  { on = "<Esc>", run = "escape", desc = "Close help" },
+  { on = "q", run = "escape", desc = "Close help" },
+]
