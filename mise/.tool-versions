@@ -11,21 +11,21 @@
 #   mise install
 
 # Programming Languages
-# nodejs 20.11.0
-# python 3.12.1
-# golang 1.21.6
-# rust 1.75.0
+nodejs 20.11.0
+python 3.12.1
+golang 1.21.6
+rust 1.75.0
 
 # Cloud & Infrastructure Tools
-# terraform 1.7.0
-# kubectl 1.29.0
-# helm 3.14.0
+terraform 1.7.0
+kubectl 1.29.0
+helm 3.14.0
 
 # Other Tools
-# direnv 2.33.0
-# awscli 2.15.0
+direnv 2.33.0
+awscli 2.15.0
 
 # You can also use version ranges:
-# nodejs lts
-# python latest
-# terraform latest
+nodejs lts
+python latest
+terraform latest

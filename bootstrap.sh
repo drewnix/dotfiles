@@ -472,18 +472,8 @@ install_shell_tools() {
 stow_dotfiles() {
     info "Linking dotfiles with GNU Stow..."
 
-    cd "$DOTFILES_DIR"
-
-    # Stow each package
-    local packages=("zsh" "git" "tmux" "vim" "ranger" "aws")
-
-    for package in "${packages[@]}"; do
-        if [ -d "$package" ]; then
-            info "Stowing $package..."
-            stow --restow --verbose=1 --no-folding "$package" 2>&1 | grep -v "BUG in find_stowed_path" || true
-            success "$package stowed"
-        fi
-    done
+    # Call dotfiles.sh to handle stow operations
+    "$DOTFILES_DIR/dotfiles.sh"
 
     success "Dotfiles linked"
 }

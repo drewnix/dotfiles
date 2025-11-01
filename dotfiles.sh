@@ -109,7 +109,8 @@ for PKG in "${PACKAGES[@]}"; do
     info "Processing package: $PKG"
 
     # Check for conflicts using stow's dry-run
-    CONFLICTS=$(stow --no --verbose=1 "$PKG" 2>&1 | grep "WARNING\|ERROR" || true)
+    # Filter out the harmless simulation mode warning
+    CONFLICTS=$(stow --no --verbose=1 "$PKG" 2>&1 | grep "WARNING\|ERROR" | grep -v "simulation mode" || true)
 
     if [ -n "$CONFLICTS" ]; then
         warning "Conflicts found with package '$PKG':"

@@ -50,6 +50,9 @@ setopt hist_ignore_dups
 setopt hist_find_no_dups
 setopt extended_history      # Record timestamp with each command
 
+# Use Emacs keybindings (Ctrl-A, Ctrl-E, etc.)
+bindkey -e
+
 # Case-insensitive completion
 autoload -Uz compinit && compinit
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
