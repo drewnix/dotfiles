@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║ Dotfiles Bootstrap Script                                    ║
+# ║ Drewnix Dotfiles Bootstrap Script                            ║
 # ╚══════════════════════════════════════════════════════════════╝
 #
 # This script automates the installation of essential tools for
@@ -25,6 +25,22 @@ NC='\033[0m' # No Color
 
 # Script directory
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Package Lists - Declarative Configuration                    ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Core essentials - always installed
+CORE_PACKAGES="stow git zsh curl wget"
+
+# Build tools - needed for compiling from source
+BUILD_PACKAGES="build-essential"
+
+# Modern CLI tools - enhanced alternatives to classic tools
+MODERN_CLI_PACKAGES="fzf ripgrep fd bat eza yazi zoxide"
+
+# Media processing tools - for yazi file previews
+MEDIA_PACKAGES="jq ffmpeg 7zip poppler imagemagick chafa ueberzug"
 
 # ╔══════════════════════════════════════════════════════════════╗
 # ║ Package Name Mappings                                        ║
@@ -75,6 +91,15 @@ get_pkg_name() {
             echo "$canonical"
             ;;
     esac
+}
+
+# Install a list of packages (space-separated)
+install_package_list() {
+    local packages=$1
+    for pkg in $packages; do
+        local pkg_name=$(get_pkg_name "$pkg")
+        install_pkg "$pkg_name" "$pkg"
+    done
 }
 
 info() {
@@ -247,93 +272,17 @@ install_pkg() {
 install_essentials() {
     info "Installing essential tools..."
 
-    # GNU Stow for dotfiles management
-    install_pkg stow "GNU Stow"
-
-    # Git
-    install_pkg git "Git"
-
-    # Zsh
-    install_pkg zsh "Zsh"
-
-    # Curl and wget
-    install_pkg curl "cURL"
-    install_pkg wget "wget"
+    # Core packages
+    install_package_list "$CORE_PACKAGES"
 
     # Build tools
-    install_pkg "$(get_pkg_name build-essential)" "Build Essential"
+    install_package_list "$BUILD_PACKAGES"
 
     # Modern CLI tools
-    install_pkg fzf "fzf (fuzzy finder)"
-    install_pkg ripgrep "ripgrep"
-    install_pkg "$(get_pkg_name fd)" "fd"
-    install_pkg bat "bat (better cat)"
+    install_package_list "$MODERN_CLI_PACKAGES"
 
-    # eza - modern ls replacement with icons and git integration
-    if ! command_exists eza; then
-        info "Installing eza..."
-        case $PKG_MANAGER in
-            brew)
-                brew install eza
-                ;;
-            apt)
-                # Ubuntu 24.04+ / Debian 13+ have eza in repos
-                if ! sudo apt install -y eza 2>/dev/null; then
-                    # Fallback: install from GitHub releases
-                    warning "eza not in apt repos, installing from GitHub..."
-                    github_install "eza-community/eza" "eza" "eza_x86_64-unknown-linux-gnu.tar.gz"
-                fi
-                ;;
-            dnf)
-                # Try dnf first (newer Fedora versions may have it)
-                if ! sudo dnf install -y eza 2>/dev/null; then
-                    # Fallback: install from GitHub releases
-                    warning "eza not in dnf repos, installing from GitHub..."
-                    github_install "eza-community/eza" "eza" "eza_x86_64-unknown-linux-gnu.tar.gz"
-                fi
-                ;;
-            pacman)
-                sudo pacman -S --noconfirm eza
-                ;;
-            *)
-                # Unknown package manager, use GitHub
-                github_install "eza-community/eza" "eza" "eza_x86_64-unknown-linux-gnu.tar.gz"
-                ;;
-        esac
-
-        if command_exists eza; then
-            success "eza installed successfully"
-        fi
-    else
-        success "eza already installed"
-    fi
-
-    # yazi - blazing fast terminal file manager
-    install_pkg yazi "yazi (file manager)"
-
-    # zoxide - smarter cd command
-    install_pkg zoxide "zoxide (smart cd)"
-
-    # Yazi dependencies for enhanced functionality
-    install_pkg jq "jq (JSON processor)"
-
-    # ffmpeg for video thumbnails
-    install_pkg ffmpeg "ffmpeg (media processing)"
-
-    # 7zip for archive previews
-    install_pkg "$(get_pkg_name 7zip)" "7zip (archive support)"
-
-    # poppler for PDF text extraction
-    install_pkg "$(get_pkg_name poppler)" "poppler (PDF support)"
-
-    # ImageMagick for image manipulation
-    install_pkg "$(get_pkg_name imagemagick)" "ImageMagick (image processing)"
-
-    # Image preview for yazi - chafa for ASCII art previews
-    install_pkg chafa "chafa (image previews)"
-
-    # ueberzugpp for better image previews (if available)
-    install_pkg "$(get_pkg_name ueberzug)" "ueberzug (image previews)" || warning "ueberzug not available on this platform, using chafa"
+    # Media processing tools
+    install_package_list "$MEDIA_PACKAGES"
 
     success "Essential tools installed"
 }
