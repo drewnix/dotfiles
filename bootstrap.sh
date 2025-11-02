@@ -102,6 +102,27 @@ install_package_list() {
     done
 }
 
+# Try package manager first, fall back to alternative if needed
+install_with_fallback() {
+    local binary=$1
+    local pkg_name=$2
+    local fallback_cmd=$3
+
+    if command_exists "$binary"; then
+        success "$binary already installed"
+        return 0
+    fi
+
+    # Try package manager first
+    if install_pkg "$pkg_name" "$binary" 2>/dev/null; then
+        return 0
+    fi
+
+    # Package manager failed or unavailable, use fallback
+    info "Installing $binary using fallback method..."
+    eval "$fallback_cmd"
+}
+
 info() {
     echo -e "${BLUE}==>${NC} $1"
 }
@@ -295,117 +316,24 @@ install_cloud_tools() {
     info "Installing cloud and DevOps tools..."
 
     # kubectl
-    if ! command_exists kubectl; then
-        info "Installing kubectl..."
-        if [[ "$OS" == "macos" ]]; then
-            brew install kubectl
-        else
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-            chmod +x kubectl
-            sudo mv kubectl /usr/local/bin/
-        fi
-        success "kubectl installed"
-    else
-        success "kubectl already installed"
-    fi
+    install_with_fallback "kubectl" "kubectl" \
+        'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && chmod +x kubectl && sudo mv kubectl /usr/local/bin/'
 
     # Helm
-    if ! command_exists helm; then
-        info "Installing Helm..."
-        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-        success "Helm installed"
-    else
-        success "Helm already installed"
-    fi
+    install_with_fallback "helm" "helm" \
+        'curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash'
 
     # Terraform
-    if ! command_exists terraform; then
-        info "Installing Terraform..."
-        if [[ "$OS" == "macos" ]]; then
-            brew tap hashicorp/tap
-            brew install hashicorp/tap/terraform
-        elif [[ "$PKG_MANAGER" == "dnf" ]]; then
-            # Fedora/RHEL/CentOS - create repo file directly
-            sudo tee /etc/yum.repos.d/hashicorp.repo > /dev/null <<EOF
-[hashicorp]
-name=Hashicorp Stable - \$basearch
-baseurl=https://rpm.releases.hashicorp.com/fedora/\$releasever/\$basearch/stable
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm.releases.hashicorp.com/gpg
-EOF
-            sudo dnf install -y terraform
-        elif [[ "$PKG_MANAGER" == "apt" ]]; then
-            # Ubuntu/Debian
-            sudo mkdir -p /usr/share/keyrings
-            wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-            sudo apt update && sudo apt install terraform
-        else
-            # Fallback: download binary directly
-            warning "Installing Terraform from binary..."
-            TF_VERSION=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r .current_version)
-            wget "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
-            unzip "terraform_${TF_VERSION}_linux_amd64.zip"
-            sudo mv terraform /usr/local/bin/
-            rm "terraform_${TF_VERSION}_linux_amd64.zip"
-        fi
-        success "Terraform installed"
-    else
-        success "Terraform already installed"
-    fi
+    install_with_fallback "terraform" "terraform" \
+        'TF_VERSION=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r .current_version) && wget "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip" && unzip "terraform_${TF_VERSION}_linux_amd64.zip" && sudo mv terraform /usr/local/bin/ && rm "terraform_${TF_VERSION}_linux_amd64.zip"'
 
     # AWS CLI
-    if ! command_exists aws; then
-        info "Installing AWS CLI..."
-        if [[ "$OS" == "macos" ]]; then
-            brew install awscli
-        elif [[ "$PKG_MANAGER" == "dnf" ]]; then
-            # Fedora has awscli2 in repos
-            sudo dnf install -y awscli2 || {
-                # Fallback to manual installation
-                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                unzip -q awscliv2.zip
-                sudo ./aws/install
-                rm -rf aws awscliv2.zip
-            }
-        else
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip -q awscliv2.zip
-            sudo ./aws/install
-            rm -rf aws awscliv2.zip
-        fi
-        success "AWS CLI installed"
-    else
-        success "AWS CLI already installed"
-    fi
+    install_with_fallback "aws" "awscli" \
+        'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip -q awscliv2.zip && sudo ./aws/install && rm -rf aws awscliv2.zip'
 
     # GCP SDK
-    if ! command_exists gcloud; then
-        info "Installing Google Cloud SDK..."
-        if [[ "$OS" == "macos" ]]; then
-            brew install google-cloud-sdk
-        elif [[ "$PKG_MANAGER" == "dnf" ]]; then
-            # Fedora - use package manager
-            sudo tee /etc/yum.repos.d/google-cloud-sdk.repo > /dev/null <<EOF
-[google-cloud-cli]
-name=Google Cloud CLI
-baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=0
-gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-EOF
-            sudo dnf install -y google-cloud-cli
-        else
-            # Ubuntu/Debian or other
-            curl https://sdk.cloud.google.com | bash
-            # Note: User needs to restart shell for PATH update
-        fi
-        success "Google Cloud SDK installed"
-    else
-        success "GCP SDK already installed"
-    fi
+    install_with_fallback "gcloud" "google-cloud-sdk" \
+        'curl https://sdk.cloud.google.com | bash'
 
     # Docker (if not installed)
     if ! command_exists docker; then
@@ -421,46 +349,16 @@ install_k8s_tools() {
     info "Installing additional Kubernetes tools..."
 
     # kubectx and kubens
-    if ! command_exists kubectx; then
-        info "Installing kubectx and kubens..."
-        if [[ "$OS" == "macos" ]]; then
-            brew install kubectx
-        else
-            sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx
-            sudo ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx
-            sudo ln -s /opt/kubectx/kubens /usr/local/bin/kubens
-        fi
-        success "kubectx and kubens installed"
-    else
-        success "kubectx already installed"
-    fi
+    install_with_fallback "kubectx" "kubectx" \
+        'sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx && sudo ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx && sudo ln -s /opt/kubectx/kubens /usr/local/bin/kubens'
 
     # k9s
-    if ! command_exists k9s; then
-        info "Installing k9s..."
-        if [[ "$OS" == "macos" ]]; then
-            brew install k9s
-        else
-            curl -sS https://webinstall.dev/k9s | bash
-            export PATH="$HOME/.local/bin:$PATH"
-        fi
-        success "k9s installed"
-    else
-        success "k9s already installed"
-    fi
+    install_with_fallback "k9s" "k9s" \
+        'curl -sS https://webinstall.dev/k9s | bash && export PATH="$HOME/.local/bin:$PATH"'
 
     # stern (log tailing)
-    if ! command_exists stern; then
-        if [[ "$OS" == "macos" ]]; then
-            info "Installing stern..."
-            brew install stern
-            success "stern installed"
-        else
-            github_install "stern/stern" "stern" "stern_{VERSION}_linux_amd64.tar.gz"
-        fi
-    else
-        success "stern already installed"
-    fi
+    install_with_fallback "stern" "stern" \
+        'github_install "stern/stern" "stern" "stern_{VERSION}_linux_amd64.tar.gz"'
 
     success "Kubernetes tools installed"
 }
