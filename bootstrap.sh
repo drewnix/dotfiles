@@ -27,8 +27,55 @@ NC='\033[0m' # No Color
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ╔══════════════════════════════════════════════════════════════╗
+# ║ Package Name Mappings                                        ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Package name lookup table: canonical name => "brew apt dnf pacman"
+# Use "-" for packages that don't exist on a platform
+declare -A PKG_NAMES=(
+    ["fd"]="fd fd-find fd-find fd"
+    ["7zip"]="p7zip p7zip-full p7zip p7zip"
+    ["poppler"]="poppler poppler-utils poppler-utils poppler"
+    ["imagemagick"]="imagemagick imagemagick ImageMagick imagemagick"
+    ["ueberzug"]="ueberzugpp - ueberzugpp ueberzug"
+    ["build-essential"]="- build-essential - -"
+)
+
+# ╔══════════════════════════════════════════════════════════════╗
 # ║ Helper Functions                                             ║
 # ╚══════════════════════════════════════════════════════════════╝
+
+# Get platform-specific package name
+get_pkg_name() {
+    local canonical=$1
+    local names=${PKG_NAMES[$canonical]}
+
+    # If no mapping exists, return canonical name
+    if [[ -z "$names" ]]; then
+        echo "$canonical"
+        return
+    fi
+
+    # Parse names based on package manager
+    case $PKG_MANAGER in
+        brew)
+            echo "$names" | awk '{print $1}'
+            ;;
+        apt)
+            echo "$names" | awk '{print $2}'
+            ;;
+        dnf)
+            echo "$names" | awk '{print $3}'
+            ;;
+        pacman)
+            echo "$names" | awk '{print $4}'
+            ;;
+        *)
+            # Unknown package manager, return canonical name
+            echo "$canonical"
+            ;;
+    esac
+}
 
 info() {
     echo -e "${BLUE}==>${NC} $1"
@@ -157,6 +204,11 @@ install_pkg() {
     local pkg=$1
     local name=${2:-$pkg}
 
+    # Skip if package is marked as unavailable on this platform
+    if [[ "$pkg" == "-" ]]; then
+        return 0
+    fi
+
     if command_exists "$pkg"; then
         success "$name already installed"
         return 0
@@ -209,27 +261,13 @@ install_essentials() {
     install_pkg wget "wget"
 
     # Build tools
-    if [[ "$PKG_MANAGER" == "apt" ]]; then
-        install_pkg build-essential "Build Essential"
-    fi
+    install_pkg "$(get_pkg_name build-essential)" "Build Essential"
 
     # Modern CLI tools
     install_pkg fzf "fzf (fuzzy finder)"
     install_pkg ripgrep "ripgrep"
-
-    # fd installation (different package names)
-    if [[ "$PKG_MANAGER" == "apt" ]]; then
-        install_pkg fd-find "fd"
-    else
-        install_pkg fd "fd"
-    fi
-
-    # bat installation (different package names)
-    if [[ "$PKG_MANAGER" == "dnf" ]]; then
-        install_pkg bat "bat (better cat)"
-    else
-        install_pkg bat "bat (better cat)"
-    fi
+    install_pkg "$(get_pkg_name fd)" "fd"
+    install_pkg bat "bat (better cat)"
 
     # eza - modern ls replacement with icons and git integration
     if ! command_exists eza; then
@@ -283,42 +321,19 @@ install_essentials() {
     install_pkg ffmpeg "ffmpeg (media processing)"
 
     # 7zip for archive previews
-    if [[ "$PKG_MANAGER" == "brew" ]]; then
-        install_pkg sevenzip "7zip (archive support)"
-    elif [[ "$PKG_MANAGER" == "apt" ]]; then
-        install_pkg p7zip-full "7zip (archive support)"
-    elif [[ "$PKG_MANAGER" == "dnf" ]]; then
-        install_pkg p7zip "7zip (archive support)"
-    elif [[ "$PKG_MANAGER" == "pacman" ]]; then
-        install_pkg p7zip "7zip (archive support)"
-    fi
+    install_pkg "$(get_pkg_name 7zip)" "7zip (archive support)"
 
     # poppler for PDF text extraction
-    if [[ "$PKG_MANAGER" == "brew" ]]; then
-        install_pkg poppler "poppler (PDF support)"
-    elif [[ "$PKG_MANAGER" == "apt" ]]; then
-        install_pkg poppler-utils "poppler (PDF support)"
-    elif [[ "$PKG_MANAGER" == "dnf" ]]; then
-        install_pkg poppler-utils "poppler (PDF support)"
-    elif [[ "$PKG_MANAGER" == "pacman" ]]; then
-        install_pkg poppler "poppler (PDF support)"
-    fi
+    install_pkg "$(get_pkg_name poppler)" "poppler (PDF support)"
 
     # ImageMagick for image manipulation
-    install_pkg imagemagick "ImageMagick (image processing)"
+    install_pkg "$(get_pkg_name imagemagick)" "ImageMagick (image processing)"
 
     # Image preview for yazi - chafa for ASCII art previews
     install_pkg chafa "chafa (image previews)"
 
     # ueberzugpp for better image previews (if available)
-    if [[ "$PKG_MANAGER" == "brew" ]]; then
-        install_pkg ueberzugpp "ueberzugpp (image previews)" || warning "ueberzugpp not available, using chafa"
-    elif [[ "$PKG_MANAGER" == "dnf" ]]; then
-        # Fedora might have it in COPR or we skip it
-        install_pkg ueberzugpp "ueberzugpp (image previews)" || warning "ueberzugpp not in repos, using chafa"
-    elif [[ "$PKG_MANAGER" == "pacman" ]]; then
-        install_pkg ueberzug "ueberzug (image previews)" || warning "ueberzug not available, using chafa"
-    fi
+    install_pkg "$(get_pkg_name ueberzug)" "ueberzug (image previews)" || warning "ueberzug not available on this platform, using chafa"
 
     success "Essential tools installed"
 }
