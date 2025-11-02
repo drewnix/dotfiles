@@ -14,7 +14,8 @@
 ╚═════╝ ╚═════╝   ╚═╝  ╚═╝    ╚═╝╚══════╚══════╚══════╝
 ```
 
-Here are my dotfiles, which are mostly optimized for cloud-native development and DevOps workflows based around Kubernetes, Terraform, AWS, GCP, and Docker.
+Here are my carefully crafted, artisinal, and opinionated dotfiles. These are mostly optimized for
+cloud-native development and DevOps workflows based around Kubernetes, Terraform, AWS, GCP, and Docker.
 
 ## Features
 

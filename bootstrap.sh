@@ -123,6 +123,21 @@ install_with_fallback() {
     eval "$fallback_cmd"
 }
 
+# Install ZSH plugin from GitHub
+install_zsh_plugin() {
+    local name=$1
+    local repo=$2
+
+    if [ -d "$HOME/.zsh/$name" ]; then
+        success "$name already installed"
+        return 0
+    fi
+
+    info "Installing $name..."
+    mkdir -p "$HOME/.zsh"
+    git clone "$repo" "$HOME/.zsh/$name" && success "$name installed"
+}
+
 info() {
     echo -e "${BLUE}==>${NC} $1"
 }
@@ -371,58 +386,17 @@ install_shell_tools() {
     info "Installing shell enhancements..."
 
     # Starship prompt
-    if ! command_exists starship; then
-        info "Installing Starship prompt..."
-        curl -sS https://starship.rs/install.sh | sh -s -- -y
-        success "Starship installed"
-    else
-        success "Starship already installed"
-    fi
+    install_with_fallback "starship" "starship" \
+        'curl -sS https://starship.rs/install.sh | sh -s -- -y'
 
-    # zsh-autosuggestions
-    if [ ! -d "$HOME/.zsh/zsh-autosuggestions" ]; then
-        info "Installing zsh-autosuggestions..."
-        mkdir -p "$HOME/.zsh"
-        git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.zsh/zsh-autosuggestions"
-        success "zsh-autosuggestions installed"
-    else
-        success "zsh-autosuggestions already installed"
-    fi
-
-    # zsh-syntax-highlighting
-    if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting" ]; then
-        info "Installing zsh-syntax-highlighting..."
-        mkdir -p "$HOME/.zsh"
-        git clone https://github.com/zsh-users/zsh-syntax-highlighting "$HOME/.zsh/zsh-syntax-highlighting"
-        success "zsh-syntax-highlighting installed"
-    else
-        success "zsh-syntax-highlighting already installed"
-    fi
-
-    # fzf-tab (replaces default tab completion with fzf)
-    if [ ! -d "$HOME/.zsh/fzf-tab" ]; then
-        info "Installing fzf-tab..."
-        mkdir -p "$HOME/.zsh"
-        git clone https://github.com/Aloxaf/fzf-tab "$HOME/.zsh/fzf-tab"
-        success "fzf-tab installed"
-    else
-        success "fzf-tab already installed"
-    fi
+    # ZSH plugins
+    install_zsh_plugin "zsh-autosuggestions" "https://github.com/zsh-users/zsh-autosuggestions"
+    install_zsh_plugin "zsh-syntax-highlighting" "https://github.com/zsh-users/zsh-syntax-highlighting"
+    install_zsh_plugin "fzf-tab" "https://github.com/Aloxaf/fzf-tab"
 
     # mise version manager (replaces asdf - much faster!)
-    if ! command_exists mise; then
-        info "Installing mise version manager..."
-        if [[ "$OS" == "macos" ]]; then
-            brew install mise
-        else
-            curl https://mise.run | sh
-            # Add to PATH for current session
-            export PATH="$HOME/.local/bin:$PATH"
-        fi
-        success "mise installed"
-    else
-        success "mise already installed"
-    fi
+    install_with_fallback "mise" "mise" \
+        'curl https://mise.run | sh && export PATH="$HOME/.local/bin:$PATH"'
 
     success "Shell tools installed"
 }
