@@ -50,6 +50,66 @@ command_exists() {
     command -v "$1" &> /dev/null
 }
 
+# Install binary from GitHub releases
+github_install() {
+    local repo=$1           # e.g., "stern/stern"
+    local binary=$2         # e.g., "stern"
+    local archive=$3        # e.g., "stern_{VERSION}_linux_amd64.tar.gz"
+
+    if command_exists "$binary"; then
+        success "$binary already installed"
+        return 0
+    fi
+
+    info "Installing $binary from GitHub ($repo)..."
+
+    # Get latest release version
+    local version=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep tag_name | cut -d '"' -f 4)
+
+    if [[ -z "$version" ]]; then
+        error "Failed to fetch latest release version for $repo"
+        return 1
+    fi
+
+    # Build download URL (replace {VERSION} placeholder)
+    local download_url="https://github.com/$repo/releases/download/${version}/${archive/\{VERSION\}/${version#v}}"
+
+    # Create temporary directory
+    local tmp_dir=$(mktemp -d)
+    cd "$tmp_dir"
+
+    # Download and extract
+    info "Downloading from $download_url"
+    if curl -L "$download_url" -o download_file; then
+        # Extract based on file type
+        if [[ "$archive" == *.tar.gz ]]; then
+            tar xzf download_file
+        elif [[ "$archive" == *.zip ]]; then
+            unzip -q download_file
+        else
+            # Assume it's a raw binary
+            mv download_file "$binary"
+        fi
+
+        # Install binary
+        chmod +x "$binary"
+        sudo mv "$binary" /usr/local/bin/
+
+        cd - > /dev/null
+        rm -rf "$tmp_dir"
+
+        if command_exists "$binary"; then
+            success "$binary installed successfully"
+            return 0
+        fi
+    fi
+
+    cd - > /dev/null
+    rm -rf "$tmp_dir"
+    error "Failed to install $binary"
+    return 1
+}
+
 # ╔══════════════════════════════════════════════════════════════╗
 # ║ Detect OS and Package Manager                                ║
 # ╚══════════════════════════════════════════════════════════════╝
@@ -180,42 +240,26 @@ install_essentials() {
                 ;;
             apt)
                 # Ubuntu 24.04+ / Debian 13+ have eza in repos
-                if sudo apt install -y eza 2>/dev/null; then
-                    success "eza installed from apt"
-                else
+                if ! sudo apt install -y eza 2>/dev/null; then
                     # Fallback: install from GitHub releases
                     warning "eza not in apt repos, installing from GitHub..."
-                    EZA_VERSION=$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest | grep tag_name | cut -d '"' -f 4)
-                    curl -L "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-gnu.tar.gz" -o eza.tar.gz
-                    tar xzf eza.tar.gz
-                    sudo mv eza /usr/local/bin/
-                    rm eza.tar.gz
+                    github_install "eza-community/eza" "eza" "eza_x86_64-unknown-linux-gnu.tar.gz"
                 fi
                 ;;
             dnf)
                 # Try dnf first (newer Fedora versions may have it)
-                if sudo dnf install -y eza 2>/dev/null; then
-                    success "eza installed from dnf"
-                else
+                if ! sudo dnf install -y eza 2>/dev/null; then
                     # Fallback: install from GitHub releases
                     warning "eza not in dnf repos, installing from GitHub..."
-                    EZA_VERSION=$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest | grep tag_name | cut -d '"' -f 4)
-                    curl -L "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-gnu.tar.gz" -o eza.tar.gz
-                    tar xzf eza.tar.gz
-                    sudo mv eza /usr/local/bin/
-                    rm eza.tar.gz
+                    github_install "eza-community/eza" "eza" "eza_x86_64-unknown-linux-gnu.tar.gz"
                 fi
                 ;;
             pacman)
                 sudo pacman -S --noconfirm eza
                 ;;
             *)
-                warning "Installing eza from GitHub releases..."
-                EZA_VERSION=$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest | grep tag_name | cut -d '"' -f 4)
-                curl -L "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-gnu.tar.gz" -o eza.tar.gz
-                tar xzf eza.tar.gz
-                sudo mv eza /usr/local/bin/
-                rm eza.tar.gz
+                # Unknown package manager, use GitHub
+                github_install "eza-community/eza" "eza" "eza_x86_64-unknown-linux-gnu.tar.gz"
                 ;;
         esac
 
@@ -443,17 +487,13 @@ install_k8s_tools() {
 
     # stern (log tailing)
     if ! command_exists stern; then
-        info "Installing stern..."
         if [[ "$OS" == "macos" ]]; then
+            info "Installing stern..."
             brew install stern
+            success "stern installed"
         else
-            STERN_VERSION=$(curl -s https://api.github.com/repos/stern/stern/releases/latest | grep tag_name | cut -d '"' -f 4)
-            curl -L "https://github.com/stern/stern/releases/download/${STERN_VERSION}/stern_${STERN_VERSION#v}_linux_amd64.tar.gz" -o stern.tar.gz
-            tar xzf stern.tar.gz
-            sudo mv stern /usr/local/bin/
-            rm stern.tar.gz
+            github_install "stern/stern" "stern" "stern_{VERSION}_linux_amd64.tar.gz"
         fi
-        success "stern installed"
     else
         success "stern already installed"
     fi
