@@ -118,11 +118,6 @@ if command -v fd &> /dev/null; then
   alias find='fd'
 fi
 
-# Better grep with ripgrep (if installed)
-if command -v rg &> /dev/null; then
-  alias grep='rg'
-fi
-
 # eza (modern ls replacement) - if installed
 if command -v eza &> /dev/null; then
   # Basic ls replacements with icons and group directories first

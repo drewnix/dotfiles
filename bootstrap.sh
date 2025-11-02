@@ -497,6 +497,16 @@ install_shell_tools() {
         success "zsh-syntax-highlighting already installed"
     fi
 
+    # fzf-tab (replaces default tab completion with fzf)
+    if [ ! -d "$HOME/.zsh/fzf-tab" ]; then
+        info "Installing fzf-tab..."
+        mkdir -p "$HOME/.zsh"
+        git clone https://github.com/Aloxaf/fzf-tab "$HOME/.zsh/fzf-tab"
+        success "fzf-tab installed"
+    else
+        success "fzf-tab already installed"
+    fi
+
     # mise version manager (replaces asdf - much faster!)
     if ! command_exists mise; then
         info "Installing mise version manager..."

@@ -117,6 +117,38 @@ if command -v fzf &> /dev/null; then
 fi
 
 # ╔══════════════════════════════════════════════════════════════╗
+# ║ zoxide - Smart Directory Navigation                         ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Initialize zoxide (smart cd replacement)
+if command -v zoxide &> /dev/null; then
+  eval "$(zoxide init zsh)"
+fi
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ fzf-tab - Fuzzy Tab Completion                              ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Load fzf-tab (must be loaded AFTER compinit and BEFORE syntax-highlighting)
+if [ -f ~/.zsh/fzf-tab/fzf-tab.plugin.zsh ]; then
+  source ~/.zsh/fzf-tab/fzf-tab.plugin.zsh
+
+  # Configure fzf-tab
+  # Disable sort when completing `git checkout`
+  zstyle ':completion:*:git-checkout:*' sort false
+  # Set descriptions format to enable group support
+  zstyle ':completion:*:descriptions' format '[%d]'
+  # Preview directory's content with eza when completing cd
+  if command -v eza &> /dev/null; then
+    zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+  else
+    zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls -1 $realpath'
+  fi
+  # Switch group using `,` and `.`
+  zstyle ':fzf-tab:*' switch-group ',' '.'
+fi
+
+# ╔══════════════════════════════════════════════════════════════╗
 # ║ zsh-autosuggestions                                          ║
 # ╚══════════════════════════════════════════════════════════════╝
 
