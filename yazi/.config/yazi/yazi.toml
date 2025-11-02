@@ -41,15 +41,18 @@ cache_dir = ""
 
 [opener]
 # Custom file openers - adjust based on your preferred applications
-# These are sensible defaults for Linux
+# Defaults for Linux and macOS
 edit = [
   { run = '${EDITOR:-vim} "$@"', block = true, for = "linux" },
+  { run = '${EDITOR:-vim} "$@"', block = true, for = "macos" },
 ]
 open = [
   { run = 'xdg-open "$@"', desc = "Open with default app", for = "linux" },
+  { run = 'open "$@"', desc = "Open with default app", for = "macos" },
 ]
 reveal = [
   { run = 'xdg-open "$(dirname "$0")"', desc = "Reveal in file manager", for = "linux" },
+  { run = 'open -R "$0"', desc = "Reveal in Finder", for = "macos" },
 ]
 
 [tasks]
