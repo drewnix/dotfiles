@@ -148,6 +148,7 @@ fi
 # k9s - terminal UI for kubernetes
 if command -v k9s &> /dev/null; then
   alias k9='k9s'
+  alias k9r='k9s --readonly'
 fi
 
 # stern - multi-pod log tailing

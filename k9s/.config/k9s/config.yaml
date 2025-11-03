@@ -1,0 +1,105 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ K9s Configuration                                            ║
+# ╚══════════════════════════════════════════════════════════════╝
+#
+# K9s terminal UI for Kubernetes
+# Docs: https://k9scli.io/
+
+k9s:
+  # Refresh rate in seconds (2s provides good balance between responsiveness and API load)
+  # For large clusters (2000+ pods), consider increasing to 5-10s
+  refreshRate: 2
+
+  # Max number of connection retries to the API server
+  maxConnRetry: 5
+
+  # Enable mouse support (set to true if you prefer point-and-click navigation)
+  # Disabled by default to encourage keyboard-driven workflows
+  enableMouse: true
+
+  # Disable pod counting for large clusters to improve performance
+  disablePodCounting: false
+
+  # Show K9s logo on startup
+  noIcons: false
+
+  # Read-only mode (set to true to prevent all modifications)
+  # Override per-cluster by creating config at: ~/.local/share/k9s/clusters/<cluster>/<context>/config.yaml
+  readOnly: false
+
+  # UI theme/skin configuration
+  ui:
+    # Theme name (from skins/ directory, without .yaml extension)
+    skin: catppuccin-mocha
+
+    # Enable icons in resource listings (requires Nerd Font)
+    enableMouse: false
+
+    # Skip splash screen on startup (launches directly to default view)
+    splashless: true
+
+    # Logo display (K9s ASCII logo in upper right)
+    logoless: true
+
+    # Remove K9s crumbs/breadcrumbs
+    crumbsless: false
+
+    # Disable reactive UI updates
+    reactive: true
+
+  # Log viewer settings
+  logger:
+    # Number of lines to tail by default
+    tail: 100
+
+    # Log buffer size (number of log lines to keep in memory)
+    buffer: 5000
+
+    # Show logs since N seconds ago (-1 = all available)
+    sinceSeconds: -1
+
+    # Display logs in full screen mode
+    fullScreenLogs: false
+
+    # Enable text wrapping in log viewer
+    textWrap: false
+
+    # Show timestamps in logs
+    showTime: false
+
+  # Current context and namespace (managed by k9s at runtime)
+  currentContext: ""
+  currentCluster: ""
+
+  # Shell pod configuration for exec operations
+  shellPod:
+    # Default shell to use when exec'ing into pods
+    # K9s will try these in order: sh, bash, ash
+    shell: sh
+
+    # Default namespace for shell pods
+    namespace: default
+
+    # Limits for shell pods
+    limits:
+      cpu: 100m
+      memory: 100Mi
+
+  # Image scan configuration (for vulnerability scanning)
+  imageScans:
+    # Enable image vulnerability scanning
+    enable: false
+
+    # Exclusions (namespaces to skip)
+    exclusions:
+      namespaces: []
+      labels: {}
+
+  # Thresholds for resource usage warnings
+  thresholds:
+    cpu:
+      critical: 90
+      warn: 70
+    memory:
+      critical: 90
+      warn: 70

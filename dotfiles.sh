@@ -32,6 +32,7 @@ ALL_PACKAGES=(
     fish
     starship
     mise
+    k9s
     claude
 )
 
@@ -45,6 +46,7 @@ DEFAULT_PACKAGES=(
     yazi
     starship
     mise
+    k9s
 )
 
 info() {
