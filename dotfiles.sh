@@ -25,7 +25,6 @@ ALL_PACKAGES=(
     git
     tmux
     vim
-    ranger
     yazi
     aws
     bash
@@ -42,7 +41,6 @@ DEFAULT_PACKAGES=(
     git
     tmux
     vim
-    ranger
     yazi
     starship
     mise

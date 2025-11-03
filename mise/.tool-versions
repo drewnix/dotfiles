@@ -17,7 +17,7 @@ golang 1.21.6
 rust 1.75.0
 
 # Cloud & Infrastructure Tools
-terraform 1.7.0
+terraform 1.13.4
 kubectl 1.29.0
 helm 3.14.0
 
@@ -27,5 +27,5 @@ awscli 2.15.0
 
 # You can also use version ranges:
 nodejs lts
-python latest
+#python latest
 terraform latest

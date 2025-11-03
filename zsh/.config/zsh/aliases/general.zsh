@@ -68,10 +68,6 @@ alias zshrc='$EDITOR ~/.zshrc'
 alias vimrc='$EDITOR ~/.vimrc'
 alias hosts='sudo $EDITOR /etc/hosts'
 
-# Ranger file manager
-alias r='ranger'
-alias rgr='ranger'
-
 # Terminal multiplexer
 alias t='tmux'
 alias ta='tmux attach'

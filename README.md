@@ -128,8 +128,6 @@ dotfiles/
 │       └── tmux.conf
 ├── vim/                          # Vim configuration
 │   └── .vimrc
-├── ranger/                       # Ranger file manager
-│   └── .config/ranger/
 ├── aws/                          # AWS CLI config
 │   └── .aws/config
 ├── starship/                     # Starship prompt config
@@ -501,7 +499,7 @@ mise upgrade
 
 ```bash
 cd ~/dotfiles
-stow -D zsh git tmux vim ranger aws starship mise
+stow -D zsh git tmux vim aws starship mise
 ```
 
 ## Acknowledgments
