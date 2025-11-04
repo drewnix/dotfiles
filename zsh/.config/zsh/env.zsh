@@ -53,6 +53,10 @@ setopt extended_history      # Record timestamp with each command
 # Use Emacs keybindings (Ctrl-A, Ctrl-E, etc.)
 bindkey -e
 
+# Fix Delete key for forward delete
+bindkey "^[[3~" delete-char        # Del key - forward delete
+bindkey "^?" backward-delete-char  # Backspace - backward delete
+
 # Case-insensitive completion
 autoload -Uz compinit && compinit
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
