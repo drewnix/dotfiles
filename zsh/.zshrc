@@ -77,6 +77,9 @@ fi
 # Yazi file manager
 [ -f ~/.config/zsh/aliases/yazi.zsh ] && source ~/.config/zsh/aliases/yazi.zsh
 
+# Security & scanning tools
+[ -f ~/.config/zsh/aliases/security.zsh ] && source ~/.config/zsh/aliases/security.zsh
+
 # ╔══════════════════════════════════════════════════════════════╗
 # ║ Starship Prompt                                              ║
 # ╚══════════════════════════════════════════════════════════════╝

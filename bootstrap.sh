@@ -342,6 +342,18 @@ install_cloud_tools() {
     install_with_fallback "terraform" "terraform" \
         'TF_VERSION=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r .current_version) && wget "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip" && unzip "terraform_${TF_VERSION}_linux_amd64.zip" && sudo mv terraform /usr/local/bin/ && rm "terraform_${TF_VERSION}_linux_amd64.zip"'
 
+    # Steampipe - SQL interface for cloud APIs
+    if ! command_exists steampipe; then
+        info "Installing steampipe..."
+        if sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"; then
+            success "steampipe installed successfully"
+        else
+            warning "Failed to install steampipe"
+        fi
+    else
+        success "steampipe already installed"
+    fi
+
     # AWS CLI
     install_with_fallback "aws" "awscli" \
         'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip -q awscliv2.zip && sudo ./aws/install && rm -rf aws awscliv2.zip'
@@ -375,7 +387,172 @@ install_k8s_tools() {
     install_with_fallback "stern" "stern" \
         'github_install "stern/stern" "stern" "stern_{VERSION}_linux_amd64.tar.gz"'
 
+    # krew - kubectl plugin manager
+    if ! command_exists kubectl-krew && ! [ -d "${HOME}/.krew" ]; then
+        info "Installing krew..."
+        (
+            set -e
+            cd "$(mktemp -d)"
+            OS="$(uname | tr '[:upper:]' '[:lower:]')"
+            ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
+            KREW="krew-${OS}_${ARCH}"
+            curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz"
+            tar zxf "${KREW}.tar.gz"
+            ./"${KREW}" install krew
+            success "krew installed successfully"
+        ) || warning "Failed to install krew"
+    else
+        success "krew already installed"
+    fi
+
+    # kubetail - multi-pod log tailing (bash script)
+    if ! command_exists kubetail; then
+        info "Installing kubetail..."
+        if sudo curl -L https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail -o /usr/local/bin/kubetail 2>/dev/null && sudo chmod +x /usr/local/bin/kubetail; then
+            success "kubetail installed successfully"
+        else
+            warning "Failed to install kubetail"
+        fi
+    else
+        success "kubetail already installed"
+    fi
+
+    # popeye - Kubernetes cluster sanitizer
+    if ! command_exists popeye; then
+        info "Installing popeye..."
+        local version=$(curl -s https://api.github.com/repos/derailed/popeye/releases/latest | grep tag_name | cut -d '"' -f 4)
+        if [[ -n "$version" ]]; then
+            if [[ "$PKG_MANAGER" == "apt" ]]; then
+                curl -sL "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.deb" -o /tmp/popeye.deb && \
+                sudo dpkg -i /tmp/popeye.deb && rm /tmp/popeye.deb && \
+                success "popeye installed successfully"
+            elif [[ "$PKG_MANAGER" == "dnf" ]]; then
+                sudo dnf install -y "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.rpm" && \
+                success "popeye installed successfully"
+            else
+                # For other systems, extract tar.gz
+                curl -sL "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.tar.gz" -o /tmp/popeye.tar.gz && \
+                tar xzf /tmp/popeye.tar.gz -C /tmp && \
+                sudo mv /tmp/popeye /usr/local/bin/ && \
+                rm /tmp/popeye.tar.gz && \
+                success "popeye installed successfully"
+            fi
+        else
+            warning "Failed to install popeye"
+        fi
+    else
+        success "popeye already installed"
+    fi
+
+    # kube-capacity - resource capacity analysis
+    if ! command_exists kube-capacity; then
+        info "Installing kube-capacity..."
+        local version=$(curl -s https://api.github.com/repos/robscott/kube-capacity/releases/latest | grep tag_name | cut -d '"' -f 4)
+        if [[ -n "$version" ]]; then
+            # Note: kube-capacity uses version WITH 'v' prefix in filename
+            curl -sL "https://github.com/robscott/kube-capacity/releases/download/${version}/kube-capacity_${version}_linux_x86_64.tar.gz" -o /tmp/kube-capacity.tar.gz && \
+            tar xzf /tmp/kube-capacity.tar.gz -C /tmp && \
+            sudo mv /tmp/kube-capacity /usr/local/bin/ && \
+            rm /tmp/kube-capacity.tar.gz && \
+            success "kube-capacity installed successfully" || warning "Failed to install kube-capacity"
+        else
+            warning "Failed to install kube-capacity"
+        fi
+    else
+        success "kube-capacity already installed"
+    fi
+
     success "Kubernetes tools installed"
+}
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Security & IaC Tools                                         ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+install_security_tools() {
+    info "Installing security and IaC scanning tools..."
+
+    # trivy - security scanner for containers and IaC
+    install_with_fallback "trivy" "trivy" \
+        'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin'
+
+    # tfsec - Terraform security scanner
+    if ! command_exists tfsec; then
+        info "Installing tfsec..."
+        local version=$(curl -s https://api.github.com/repos/aquasecurity/tfsec/releases/latest | grep tag_name | cut -d '"' -f 4)
+        if [[ -n "$version" ]]; then
+            curl -sL "https://github.com/aquasecurity/tfsec/releases/download/${version}/tfsec_${version#v}_linux_amd64.tar.gz" -o /tmp/tfsec.tar.gz && \
+            tar xzf /tmp/tfsec.tar.gz -C /tmp && \
+            sudo mv /tmp/tfsec /usr/local/bin/ && \
+            rm /tmp/tfsec.tar.gz && \
+            success "tfsec installed successfully" || warning "Failed to install tfsec"
+        else
+            warning "Failed to install tfsec"
+        fi
+    else
+        success "tfsec already installed"
+    fi
+
+    # tflint - Terraform linter
+    if ! command_exists tflint; then
+        info "Installing tflint..."
+        if curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash; then
+            success "tflint installed successfully"
+        else
+            warning "Failed to install tflint"
+        fi
+    else
+        success "tflint already installed"
+    fi
+
+    # dive - Docker image layer analyzer
+    if ! command_exists dive; then
+        info "Installing dive..."
+        local version=$(curl -s https://api.github.com/repos/wagoodman/dive/releases/latest | grep tag_name | cut -d '"' -f 4)
+        if [[ -n "$version" ]]; then
+            curl -sL "https://github.com/wagoodman/dive/releases/download/${version}/dive_${version#v}_linux_amd64.tar.gz" -o /tmp/dive.tar.gz && \
+            tar xzf /tmp/dive.tar.gz -C /tmp && \
+            sudo mv /tmp/dive /usr/local/bin/ && \
+            rm /tmp/dive.tar.gz && \
+            success "dive installed successfully" || warning "Failed to install dive"
+        else
+            warning "Failed to install dive"
+        fi
+    else
+        success "dive already installed"
+    fi
+
+    # yq - YAML processor
+    if ! command_exists yq; then
+        info "Installing yq..."
+        local version=$(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest | grep tag_name | cut -d '"' -f 4)
+        if [[ -n "$version" ]]; then
+            sudo curl -sL "https://github.com/mikefarah/yq/releases/download/${version}/yq_linux_amd64" -o /usr/local/bin/yq && \
+            sudo chmod +x /usr/local/bin/yq && \
+            success "yq installed successfully" || warning "Failed to install yq"
+        else
+            warning "Failed to install yq"
+        fi
+    else
+        success "yq already installed"
+    fi
+
+    # aws-vault - secure AWS credential manager
+    if ! command_exists aws-vault; then
+        info "Installing aws-vault..."
+        local version=$(curl -s https://api.github.com/repos/99designs/aws-vault/releases/latest | grep tag_name | cut -d '"' -f 4)
+        if [[ -n "$version" ]]; then
+            sudo curl -sL "https://github.com/99designs/aws-vault/releases/download/${version}/aws-vault-linux-amd64" -o /usr/local/bin/aws-vault && \
+            sudo chmod +x /usr/local/bin/aws-vault && \
+            success "aws-vault installed successfully" || warning "Failed to install aws-vault"
+        else
+            warning "Failed to install aws-vault"
+        fi
+    else
+        success "aws-vault already installed"
+    fi
+
+    success "Security and IaC tools installed"
 }
 
 # ╔══════════════════════════════════════════════════════════════╗
@@ -489,6 +666,7 @@ main() {
     if [[ "$mode" == "full" ]]; then
         install_cloud_tools
         install_k8s_tools
+        install_security_tools
     fi
 
     install_shell_tools

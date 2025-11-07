@@ -28,11 +28,11 @@ ALL_PACKAGES=(
     yazi
     aws
     bash
-    fish
     starship
     mise
     k9s
     claude
+    steampipe
 )
 
 # Default packages to install if no arguments provided
@@ -45,6 +45,7 @@ DEFAULT_PACKAGES=(
     starship
     mise
     k9s
+    steampipe
 )
 
 info() {

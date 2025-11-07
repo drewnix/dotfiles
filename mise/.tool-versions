@@ -29,3 +29,35 @@ awscli 2.15.0
 nodejs lts
 #python latest
 terraform latest
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║ Security & Scanning Tools (installed via bootstrap.sh)      ║
+# ╚══════════════════════════════════════════════════════════════╝
+#
+# The following tools are installed by bootstrap.sh as binaries and are
+# not managed by mise. They are listed here for documentation purposes.
+#
+# Kubernetes Tools:
+#   - krew (kubectl plugin manager)
+#   - kubetail (multi-pod log tailing)
+#   - popeye (cluster sanitizer)
+#   - kube-capacity (resource analysis)
+#
+# Security Scanners:
+#   - trivy (container & IaC security scanner)
+#   - tfsec (Terraform security scanner)
+#   - tflint (Terraform linter)
+#
+# Container Tools:
+#   - dive (Docker image layer analyzer)
+#
+# CLI Tools:
+#   - yq (YAML processor)
+#
+# Cloud Tools:
+#   - aws-vault (secure AWS credential manager)
+#
+# To install these tools, run:
+#   ./bootstrap.sh --full
+#
+# Or install individually via their respective package managers (brew, apt, etc.)

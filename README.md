@@ -27,12 +27,13 @@ cloud-native development and DevOps workflows based around Kubernetes, Terraform
 
 ### Cloud & DevOps Aliases
 
-- **200+ Kubernetes aliases** - kubectl, helm, k9s, kubectx, stern
-- **Terraform shortcuts** - workspace management, plan/apply helpers
-- **AWS CLI helpers** - EC2, S3, EKS, Lambda, IAM shortcuts
+- **200+ Kubernetes aliases** - kubectl, helm, k9s, kubectx, stern, kubetail, popeye, kube-capacity, krew
+- **Terraform shortcuts** - workspace management, plan/apply helpers, linting (tflint), security (tfsec)
+- **AWS CLI helpers** - EC2, S3, EKS, Lambda, IAM shortcuts, secure credential management (aws-vault)
 - **GCP/gcloud aliases** - GKE, GCE, Cloud Run, Cloud Functions
-- **Docker & containers** - comprehensive docker/docker-compose aliases
+- **Docker & containers** - comprehensive docker/docker-compose aliases, image analysis (dive)
 - **Git workflow** - enhanced git operations and shortcuts
+- **Security scanning** - trivy for containers/IaC, tfsec/tflint for Terraform, vulnerability detection
 
 ### Modern CLI Tools
 
@@ -43,6 +44,7 @@ cloud-native development and DevOps workflows based around Kubernetes, Terraform
 - **bat** - Syntax-highlighted cat alternative
 - **fd** - Fast and user-friendly find replacement
 - **ripgrep** - Lightning-fast grep alternative
+- **yq** - YAML processor (like jq but for YAML) - essential for Kubernetes manifests
 
 ### Smart Features
 
