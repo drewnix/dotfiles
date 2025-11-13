@@ -22,7 +22,9 @@ cloud-native development and DevOps workflows based around Kubernetes, Terraform
 ### Modular Shell Configuration
 
 - **ZSH** with organized, modular configuration
+- **Nushell** - Modern shell with structured data pipelines (NEW!)
 - Separate alias files for different tools (Kubernetes, Terraform, AWS, GCP, Docker, Git)
+- Full feature parity between ZSH and Nushell configurations
 - Easy to customize and extend
 
 ### Cloud & DevOps Aliases
@@ -158,6 +160,51 @@ The main `.zshrc` automatically loads modular configurations:
 - **general.zsh** - General utilities and functions
 
 Each module can be customized independently without affecting others.
+
+### Nushell Configuration
+
+Nushell provides a modern, structured data-first shell experience with full feature parity to ZSH:
+
+**Autoload Architecture** - Modern configuration using numbered autoload files:
+- **01-environment.nu** - PATH, environment variables, core settings
+- **02-integrations.nu** - Starship, zoxide, carapace, direnv, mise
+- **10-aliases-general.nu** - Navigation, file ops, utilities
+- **11-aliases-git.nu** - Git workflows (identical to ZSH)
+- **12-aliases-k8s.nu** - 200+ Kubernetes aliases and helpers
+- **13-aliases-terraform.nu** - Terraform/Terragrunt/IaC workflows
+- **14-aliases-docker.nu** - Docker and container management
+- **15-aliases-aws.nu** - AWS CLI helpers and commands
+- **16-aliases-gcp.nu** - GCP/gcloud operations
+- **20-completions.nu** - Custom completions for contexts, profiles, workspaces
+- **99-local.nu** - Machine-specific overrides (template)
+
+**Key Nushell Advantages:**
+- **Structured data** - Commands return tables/records instead of text
+- **Type safety** - Parameters have types and automatic validation
+- **Pipeline-friendly** - Filter, sort, and transform data natively
+- **Advanced completions** - Custom completions for kubectl contexts, AWS profiles, GCP projects, etc.
+- **FZF integration** - Interactive selectors for all cloud resources
+- **Better error handling** - Clear error messages with context
+
+**Quick Start with Nushell:**
+```bash
+# Launch nushell
+nu
+
+# Or set as interactive shell (while keeping bash/zsh as login shell)
+echo '[ -x /usr/bin/nu ] && exec nu' >> ~/.bashrc
+
+# Try structured data pipelines
+kubectl get pods | from json | where status.phase == "Running"
+docker ps --format json | from json | where State == "running" | select Names Image Status
+
+# Use custom completions
+kubectl-use-context <TAB>    # Shows all contexts
+aws-use-profile <TAB>         # Shows all AWS profiles
+tf-workspace-select <TAB>     # Shows all workspaces
+```
+
+Configuration: `~/.config/nushell/`
 
 ### Starship Prompt
 

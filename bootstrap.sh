@@ -578,12 +578,89 @@ install_shell_tools() {
     success "Shell tools installed"
 }
 
+install_nushell() {
+    info "Installing Nushell..."
+
+    # Check if nushell is already installed
+    if command_exists nu; then
+        success "Nushell is already installed"
+    else
+        # Install nushell via package manager or cargo
+        case $PKG_MANAGER in
+            apt)
+                # For Ubuntu/Debian, use cargo for latest version
+                if command_exists cargo; then
+                    info "Installing nushell via cargo..."
+                    cargo install nu --features=extra --locked
+                else
+                    warning "Cargo not found. Install Rust first or use package manager"
+                    return 1
+                fi
+                ;;
+            dnf)
+                # Fedora has nushell in repos
+                install_pkg "nushell"
+                ;;
+            brew)
+                # macOS via Homebrew
+                install_pkg "nushell"
+                ;;
+            pacman)
+                # Arch Linux
+                install_pkg "nushell"
+                ;;
+            *)
+                warning "Unknown package manager, trying cargo..."
+                if command_exists cargo; then
+                    cargo install nu --features=extra --locked
+                else
+                    error "Could not install nushell. Install Rust/cargo first."
+                    return 1
+                fi
+                ;;
+        esac
+    fi
+
+    # Set up vendor autoload directory for third-party integrations
+    info "Setting up nushell integrations..."
+    local vendor_dir="$HOME/.local/share/nushell/vendor/autoload"
+    mkdir -p "$vendor_dir"
+
+    # Generate starship integration
+    if command_exists starship; then
+        info "Generating starship integration for nushell..."
+        starship init nu > "$vendor_dir/starship.nu"
+    fi
+
+    # Generate zoxide integration
+    if command_exists zoxide; then
+        info "Generating zoxide integration for nushell..."
+        zoxide init nushell > "$vendor_dir/zoxide.nu"
+    fi
+
+    # Generate carapace integration
+    if command_exists carapace; then
+        info "Generating carapace integration for nushell..."
+        carapace _carapace nushell > "$vendor_dir/carapace.nu"
+    fi
+
+    success "Nushell installed and configured!"
+}
+
 # ╔══════════════════════════════════════════════════════════════╗
 # ║ Stow Dotfiles                                                ║
 # ╚══════════════════════════════════════════════════════════════╝
 
 stow_dotfiles() {
     info "Linking dotfiles with GNU Stow..."
+
+    # Handle nushell config directory conflict
+    # Nushell creates default config on first run, which conflicts with stow
+    if [ -d "$HOME/.config/nushell" ] && [ ! -L "$HOME/.config/nushell" ]; then
+        warning "Existing nushell config directory found"
+        info "Backing up to ~/.config/nushell.backup..."
+        mv "$HOME/.config/nushell" "$HOME/.config/nushell.backup"
+    fi
 
     # Call dotfiles.sh to handle stow operations
     "$DOTFILES_DIR/dotfiles.sh"
@@ -670,6 +747,7 @@ main() {
     fi
 
     install_shell_tools
+    install_nushell
     stow_dotfiles
     change_shell
 

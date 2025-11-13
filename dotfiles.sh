@@ -33,6 +33,7 @@ ALL_PACKAGES=(
     k9s
     claude
     steampipe
+    nushell
 )
 
 # Default packages to install if no arguments provided
@@ -46,6 +47,7 @@ DEFAULT_PACKAGES=(
     mise
     k9s
     steampipe
+    nushell
 )
 
 info() {
