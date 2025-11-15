@@ -2,6 +2,12 @@
 # ║ Environment Variables & Path Configuration                   ║
 # ╚══════════════════════════════════════════════════════════════╝
 
+# XDG Base Directory - Force consistent config locations across platforms
+# This ensures nushell and other tools use ~/.config instead of macOS-specific paths
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+
 # Go Programming
 export GOPATH=$HOME/go
 export GOPRIVATE="cd.splunkdev.com"
