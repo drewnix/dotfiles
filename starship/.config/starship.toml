@@ -10,20 +10,23 @@ $username\
 $hostname\
 $directory\
 $git_branch\
-$git_status\
-$git_state\
 $kubernetes\
-$terraform\
-$aws\
-$gcloud\
-$docker_context\
-$python\
-$nodejs\
-$golang\
-$rust\
-$java\
-$package
+$jobs\
+$time
 $character"""
+
+# git_status\
+# $git_state\
+# $terraform\
+# $python\
+# $nodejs\
+# $golang\
+# $rust\
+# $package\
+# $java\
+# $aws\
+# $gcloud\
+# $docker_context\
 
 # Right-side prompt
 right_format = "$cmd_duration"
@@ -36,46 +39,54 @@ add_newline = true
 # ╚══════════════════════════════════════════════════════════════╝
 
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold green)"
+success_symbol = "[➤]($bold fg:#f8f8f2)"
+error_symbol = "[➤]($bold fg:#fb4934)"
 
 [username]
-show_always = false
-style_user = "bold yellow"
-style_root = "bold red"
-format = "[$user]($style)@"
+show_always = true
+style_user = "fg:fg_6 bg:bg_6"
+style_root = "fg:fg_6 bold bg:bg_6"
+format = '[ ($user) ]($style)'
 
 [hostname]
 ssh_only = true
-format = "[$hostname](bold blue) "
+format = "[$hostname](bold blue)"
 disabled = false
 
 [directory]
 truncation_length = 3
 truncate_to_repo = true
-format = "[$path]($style)[$read_only]($read_only_style) "
+format = "[in ](white)[$path]($style)[$read_only]($read_only_style) "
 style = "bold cyan"
-read_only = " "
+read_only = " [ro]"
 read_only_style = "red"
 
 [time]
-disabled = true  # Disabled for cleaner prompt
-format = "[$time]($style) "
-style = "bold white"
-time_format = "%T"
+disabled = false
+time_format = "%l:%M %p"
+style = "bold yellow"
+format = 'at [$time]($style)'
 
 [cmd_duration]
 min_time = 500
 format = "took [$duration]($style) "
 style = "bold yellow"
 
+[jobs]
+disabled = false
+symbol = ' '
+number_threshold = 1
+symbol_threshold = 1
+style = "fg:fg_1 bg:bg_1"
+format="[ $symbol$number]($style)"
+
+
 # ╔══════════════════════════════════════════════════════════════╗
 # ║ Git Integration                                              ║
 # ╚══════════════════════════════════════════════════════════════╝
 
 [git_branch]
-symbol = " "
+symbol = " "
 format = "on [$symbol$branch(:$remote_branch)]($style) "
 style = "bold purple"
 
@@ -103,11 +114,7 @@ style = "bold yellow"
 
 [kubernetes]
 disabled = false
-format = '[⎈ $context(\($namespace\))](bold blue) '
-# Only show when in k8s-related directories
-detect_files = ['skaffold.yaml', 'kustomization.yaml', 'k8s.yaml']
-detect_folders = ['k8s']
-detect_extensions = []
+format = 'on [󱃾 $context(\($namespace\))](bold blue) '
 
 [[kubernetes.contexts]]
 context_pattern = "gke_.*_(?P<cluster>[\\w-]+)"
@@ -169,19 +176,19 @@ detect_folders = []
 # ╚══════════════════════════════════════════════════════════════╝
 
 [python]
-symbol = " "
-format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
-style = "yellow bold"
+symbol = " "
+format = 'with [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+style = "blue"
 pyenv_version_name = false
 pyenv_prefix = "pyenv "
 
 [nodejs]
-symbol = " "
+symbol = " "
 format = "[$symbol($version )]($style)"
 style = "bold green"
 
 [golang]
-symbol = " "
+symbol = "󰟓 "
 format = "[$symbol($version )]($style)"
 style = "bold cyan"
 

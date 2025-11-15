@@ -37,60 +37,80 @@ CORE_PACKAGES="stow git zsh curl wget"
 BUILD_PACKAGES="build-essential"
 
 # Modern CLI tools - enhanced alternatives to classic tools
-MODERN_CLI_PACKAGES="fzf ripgrep fd bat eza yazi zoxide"
+MODERN_CLI_PACKAGES="fzf ripgrep fd bat eza yazi zoxide tmux"
 
 # Media processing tools - for yazi file previews
-MEDIA_PACKAGES="jq ffmpeg 7zip poppler imagemagick chafa ueberzug"
-
-# ╔══════════════════════════════════════════════════════════════╗
-# ║ Package Name Mappings                                        ║
-# ╚══════════════════════════════════════════════════════════════╝
-
-# Package name lookup table: canonical name => "brew apt dnf pacman"
-# Use "-" for packages that don't exist on a platform
-declare -A PKG_NAMES=(
-    ["fd"]="fd fd-find fd-find fd"
-    ["7zip"]="p7zip p7zip-full p7zip p7zip"
-    ["poppler"]="poppler poppler-utils poppler-utils poppler"
-    ["imagemagick"]="imagemagick imagemagick ImageMagick imagemagick"
-    ["ueberzug"]="ueberzugpp - ueberzugpp ueberzug"
-    ["build-essential"]="- build-essential - -"
-)
+MEDIA_PACKAGES="jq ffmpeg p7zip poppler imagemagick chafa ueberzug"
 
 # ╔══════════════════════════════════════════════════════════════╗
 # ║ Helper Functions                                             ║
 # ╚══════════════════════════════════════════════════════════════╝
 
 # Get platform-specific package name
+# Maps canonical package names to platform-specific names
+# Compatible with bash 3.2+ (no associative arrays)
 get_pkg_name() {
     local canonical=$1
-    local names=${PKG_NAMES[$canonical]}
+    local pkg_name=""
 
-    # If no mapping exists, return canonical name
-    if [[ -z "$names" ]]; then
-        echo "$canonical"
-        return
-    fi
-
-    # Parse names based on package manager
-    case $PKG_MANAGER in
-        brew)
-            echo "$names" | awk '{print $1}'
+    # Map package names based on canonical name and package manager
+    # Format: canonical name -> brew apt dnf pacman
+    case "$canonical" in
+        fd)
+            case $PKG_MANAGER in
+                brew) pkg_name="fd" ;;
+                apt) pkg_name="fd-find" ;;
+                dnf) pkg_name="fd-find" ;;
+                pacman) pkg_name="fd" ;;
+            esac
             ;;
-        apt)
-            echo "$names" | awk '{print $2}'
+        p7zip)
+            case $PKG_MANAGER in
+                brew) pkg_name="p7zip" ;;
+                apt) pkg_name="p7zip-full" ;;
+                dnf) pkg_name="p7zip" ;;
+                pacman) pkg_name="p7zip" ;;
+            esac
             ;;
-        dnf)
-            echo "$names" | awk '{print $3}'
+        poppler)
+            case $PKG_MANAGER in
+                brew) pkg_name="poppler" ;;
+                apt) pkg_name="poppler-utils" ;;
+                dnf) pkg_name="poppler-utils" ;;
+                pacman) pkg_name="poppler" ;;
+            esac
             ;;
-        pacman)
-            echo "$names" | awk '{print $4}'
+        imagemagick)
+            case $PKG_MANAGER in
+                brew) pkg_name="imagemagick" ;;
+                apt) pkg_name="imagemagick" ;;
+                dnf) pkg_name="ImageMagick" ;;
+                pacman) pkg_name="imagemagick" ;;
+            esac
+            ;;
+        ueberzug)
+            case $PKG_MANAGER in
+                brew) pkg_name="ueberzugpp" ;;
+                apt) pkg_name="-" ;;
+                dnf) pkg_name="ueberzugpp" ;;
+                pacman) pkg_name="ueberzug" ;;
+            esac
+            ;;
+        build-essential)
+            case $PKG_MANAGER in
+                brew) pkg_name="-" ;;
+                apt) pkg_name="build-essential" ;;
+                dnf) pkg_name="-" ;;
+                pacman) pkg_name="-" ;;
+            esac
             ;;
         *)
-            # Unknown package manager, return canonical name
-            echo "$canonical"
+            # No mapping, use canonical name
+            pkg_name="$canonical"
             ;;
     esac
+
+    echo "$pkg_name"
 }
 
 # Install a list of packages (space-separated)
@@ -162,7 +182,7 @@ command_exists() {
 github_install() {
     local repo=$1           # e.g., "stern/stern"
     local binary=$2         # e.g., "stern"
-    local archive=$3        # e.g., "stern_{VERSION}_linux_amd64.tar.gz"
+    local archive=$3        # e.g., "stern_{VERSION}_{OS}_{ARCH}.tar.gz"
 
     if command_exists "$binary"; then
         success "$binary already installed"
@@ -179,8 +199,30 @@ github_install() {
         return 1
     fi
 
-    # Build download URL (replace {VERSION} placeholder)
-    local download_url="https://github.com/$repo/releases/download/${version}/${archive/\{VERSION\}/${version#v}}"
+    # Detect OS and architecture
+    local os_name="linux"
+    local arch_name="amd64"
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        os_name="darwin"
+        # Detect Mac architecture
+        if [[ $(uname -m) == "arm64" ]]; then
+            arch_name="arm64"
+        else
+            arch_name="amd64"
+        fi
+    else
+        # Linux
+        if [[ $(uname -m) == "aarch64" ]] || [[ $(uname -m) == "arm64" ]]; then
+            arch_name="arm64"
+        fi
+    fi
+
+    # Build download URL (replace placeholders)
+    local download_file="${archive/\{VERSION\}/${version#v}}"
+    download_file="${download_file/\{OS\}/${os_name}}"
+    download_file="${download_file/\{ARCH\}/${arch_name}}"
+    local download_url="https://github.com/$repo/releases/download/${version}/${download_file}"
 
     # Create temporary directory
     local tmp_dir=$(mktemp -d)
@@ -188,15 +230,15 @@ github_install() {
 
     # Download and extract
     info "Downloading from $download_url"
-    if curl -L "$download_url" -o download_file; then
+    if curl -L "$download_url" -o download_archive; then
         # Extract based on file type
-        if [[ "$archive" == *.tar.gz ]]; then
-            tar xzf download_file
-        elif [[ "$archive" == *.zip ]]; then
-            unzip -q download_file
+        if [[ "$download_file" == *.tar.gz ]]; then
+            tar xzf download_archive
+        elif [[ "$download_file" == *.zip ]]; then
+            unzip -q download_archive
         else
             # Assume it's a raw binary
-            mv download_file "$binary"
+            mv download_archive "$binary"
         fi
 
         # Install binary
@@ -375,19 +417,77 @@ install_cloud_tools() {
 install_k8s_tools() {
     info "Installing additional Kubernetes tools..."
 
-    # kubectx and kubens
-    install_with_fallback "kubectx" "kubectx" \
-        'sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx && sudo ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx && sudo ln -s /opt/kubectx/kubens /usr/local/bin/kubens'
+    # On macOS, prefer Homebrew for all tools
+    if [[ "$PKG_MANAGER" == "brew" ]]; then
+        install_pkg "kubectx" "kubectx"
+        install_pkg "k9s" "k9s"
+        install_pkg "stern" "stern"
+        install_pkg "kubetail" "kubetail"
+        install_pkg "derailed/popeye/popeye" "popeye"
+        install_pkg "robscott/tap/kube-capacity" "kube-capacity"
+    else
+        # Linux installations
+        # kubectx and kubens
+        install_with_fallback "kubectx" "kubectx" \
+            'sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx && sudo ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx && sudo ln -s /opt/kubectx/kubens /usr/local/bin/kubens'
 
-    # k9s
-    install_with_fallback "k9s" "k9s" \
-        'curl -sS https://webinstall.dev/k9s | bash && export PATH="$HOME/.local/bin:$PATH"'
+        # k9s
+        install_with_fallback "k9s" "k9s" \
+            'curl -sS https://webinstall.dev/k9s | bash && export PATH="$HOME/.local/bin:$PATH"'
 
-    # stern (log tailing)
-    install_with_fallback "stern" "stern" \
-        'github_install "stern/stern" "stern" "stern_{VERSION}_linux_amd64.tar.gz"'
+        # stern (log tailing)
+        install_with_fallback "stern" "stern" \
+            'github_install "stern/stern" "stern" "stern_{VERSION}_{OS}_{ARCH}.tar.gz"'
 
-    # krew - kubectl plugin manager
+        # kubetail - multi-pod log tailing (bash script)
+        if ! command_exists kubetail; then
+            info "Installing kubetail..."
+            if sudo curl -L https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail -o /usr/local/bin/kubetail 2>/dev/null && sudo chmod +x /usr/local/bin/kubetail; then
+                success "kubetail installed successfully"
+            else
+                warning "Failed to install kubetail"
+            fi
+        else
+            success "kubetail already installed"
+        fi
+
+        # popeye - Kubernetes cluster sanitizer
+        if ! command_exists popeye; then
+            info "Installing popeye..."
+            local version=$(curl -s https://api.github.com/repos/derailed/popeye/releases/latest | grep tag_name | cut -d '"' -f 4)
+            if [[ -n "$version" ]]; then
+                if [[ "$PKG_MANAGER" == "apt" ]]; then
+                    curl -sL "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.deb" -o /tmp/popeye.deb && \
+                    sudo dpkg -i /tmp/popeye.deb && rm /tmp/popeye.deb && \
+                    success "popeye installed successfully"
+                elif [[ "$PKG_MANAGER" == "dnf" ]]; then
+                    sudo dnf install -y "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.rpm" && \
+                    success "popeye installed successfully"
+                else
+                    # For other systems, extract tar.gz
+                    curl -sL "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.tar.gz" -o /tmp/popeye.tar.gz && \
+                    tar xzf /tmp/popeye.tar.gz -C /tmp && \
+                    sudo mv /tmp/popeye /usr/local/bin/ && \
+                    rm /tmp/popeye.tar.gz && \
+                    success "popeye installed successfully"
+                fi
+            else
+                warning "Failed to install popeye"
+            fi
+        else
+            success "popeye already installed"
+        fi
+
+        # kube-capacity - resource capacity analysis
+        if ! command_exists kube-capacity; then
+            info "Installing kube-capacity..."
+            github_install "robscott/kube-capacity" "kube-capacity" "kube-capacity_{VERSION}_{OS}_{ARCH}.tar.gz"
+        else
+            success "kube-capacity already installed"
+        fi
+    fi
+
+    # krew - kubectl plugin manager (works same on all platforms)
     if ! command_exists kubectl-krew && ! [ -d "${HOME}/.krew" ]; then
         info "Installing krew..."
         (
@@ -405,63 +505,6 @@ install_k8s_tools() {
         success "krew already installed"
     fi
 
-    # kubetail - multi-pod log tailing (bash script)
-    if ! command_exists kubetail; then
-        info "Installing kubetail..."
-        if sudo curl -L https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail -o /usr/local/bin/kubetail 2>/dev/null && sudo chmod +x /usr/local/bin/kubetail; then
-            success "kubetail installed successfully"
-        else
-            warning "Failed to install kubetail"
-        fi
-    else
-        success "kubetail already installed"
-    fi
-
-    # popeye - Kubernetes cluster sanitizer
-    if ! command_exists popeye; then
-        info "Installing popeye..."
-        local version=$(curl -s https://api.github.com/repos/derailed/popeye/releases/latest | grep tag_name | cut -d '"' -f 4)
-        if [[ -n "$version" ]]; then
-            if [[ "$PKG_MANAGER" == "apt" ]]; then
-                curl -sL "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.deb" -o /tmp/popeye.deb && \
-                sudo dpkg -i /tmp/popeye.deb && rm /tmp/popeye.deb && \
-                success "popeye installed successfully"
-            elif [[ "$PKG_MANAGER" == "dnf" ]]; then
-                sudo dnf install -y "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.rpm" && \
-                success "popeye installed successfully"
-            else
-                # For other systems, extract tar.gz
-                curl -sL "https://github.com/derailed/popeye/releases/download/${version}/popeye_linux_amd64.tar.gz" -o /tmp/popeye.tar.gz && \
-                tar xzf /tmp/popeye.tar.gz -C /tmp && \
-                sudo mv /tmp/popeye /usr/local/bin/ && \
-                rm /tmp/popeye.tar.gz && \
-                success "popeye installed successfully"
-            fi
-        else
-            warning "Failed to install popeye"
-        fi
-    else
-        success "popeye already installed"
-    fi
-
-    # kube-capacity - resource capacity analysis
-    if ! command_exists kube-capacity; then
-        info "Installing kube-capacity..."
-        local version=$(curl -s https://api.github.com/repos/robscott/kube-capacity/releases/latest | grep tag_name | cut -d '"' -f 4)
-        if [[ -n "$version" ]]; then
-            # Note: kube-capacity uses version WITH 'v' prefix in filename
-            curl -sL "https://github.com/robscott/kube-capacity/releases/download/${version}/kube-capacity_${version}_linux_x86_64.tar.gz" -o /tmp/kube-capacity.tar.gz && \
-            tar xzf /tmp/kube-capacity.tar.gz -C /tmp && \
-            sudo mv /tmp/kube-capacity /usr/local/bin/ && \
-            rm /tmp/kube-capacity.tar.gz && \
-            success "kube-capacity installed successfully" || warning "Failed to install kube-capacity"
-        else
-            warning "Failed to install kube-capacity"
-        fi
-    else
-        success "kube-capacity already installed"
-    fi
-
     success "Kubernetes tools installed"
 }
 
@@ -472,84 +515,77 @@ install_k8s_tools() {
 install_security_tools() {
     info "Installing security and IaC scanning tools..."
 
-    # trivy - security scanner for containers and IaC
-    install_with_fallback "trivy" "trivy" \
-        'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin'
-
-    # tfsec - Terraform security scanner
-    if ! command_exists tfsec; then
-        info "Installing tfsec..."
-        local version=$(curl -s https://api.github.com/repos/aquasecurity/tfsec/releases/latest | grep tag_name | cut -d '"' -f 4)
-        if [[ -n "$version" ]]; then
-            curl -sL "https://github.com/aquasecurity/tfsec/releases/download/${version}/tfsec_${version#v}_linux_amd64.tar.gz" -o /tmp/tfsec.tar.gz && \
-            tar xzf /tmp/tfsec.tar.gz -C /tmp && \
-            sudo mv /tmp/tfsec /usr/local/bin/ && \
-            rm /tmp/tfsec.tar.gz && \
-            success "tfsec installed successfully" || warning "Failed to install tfsec"
-        else
-            warning "Failed to install tfsec"
-        fi
+    # On macOS, prefer Homebrew for all tools
+    if [[ "$PKG_MANAGER" == "brew" ]]; then
+        install_pkg "trivy" "trivy"
+        install_pkg "tfsec" "tfsec"
+        install_pkg "tflint" "tflint"
+        install_pkg "dive" "dive"
+        install_pkg "yq" "yq"
+        install_pkg "aws-vault" "aws-vault"
     else
-        success "tfsec already installed"
-    fi
+        # Linux installations
+        # trivy - security scanner for containers and IaC
+        install_with_fallback "trivy" "trivy" \
+            'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin'
 
-    # tflint - Terraform linter
-    if ! command_exists tflint; then
-        info "Installing tflint..."
-        if curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash; then
-            success "tflint installed successfully"
+        # tfsec - Terraform security scanner
+        if ! command_exists tfsec; then
+            info "Installing tfsec..."
+            github_install "aquasecurity/tfsec" "tfsec" "tfsec_{VERSION}_{OS}_{ARCH}.tar.gz"
         else
-            warning "Failed to install tflint"
+            success "tfsec already installed"
         fi
-    else
-        success "tflint already installed"
-    fi
 
-    # dive - Docker image layer analyzer
-    if ! command_exists dive; then
-        info "Installing dive..."
-        local version=$(curl -s https://api.github.com/repos/wagoodman/dive/releases/latest | grep tag_name | cut -d '"' -f 4)
-        if [[ -n "$version" ]]; then
-            curl -sL "https://github.com/wagoodman/dive/releases/download/${version}/dive_${version#v}_linux_amd64.tar.gz" -o /tmp/dive.tar.gz && \
-            tar xzf /tmp/dive.tar.gz -C /tmp && \
-            sudo mv /tmp/dive /usr/local/bin/ && \
-            rm /tmp/dive.tar.gz && \
-            success "dive installed successfully" || warning "Failed to install dive"
+        # tflint - Terraform linter
+        if ! command_exists tflint; then
+            info "Installing tflint..."
+            if curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash; then
+                success "tflint installed successfully"
+            else
+                warning "Failed to install tflint"
+            fi
         else
-            warning "Failed to install dive"
+            success "tflint already installed"
         fi
-    else
-        success "dive already installed"
-    fi
 
-    # yq - YAML processor
-    if ! command_exists yq; then
-        info "Installing yq..."
-        local version=$(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest | grep tag_name | cut -d '"' -f 4)
-        if [[ -n "$version" ]]; then
-            sudo curl -sL "https://github.com/mikefarah/yq/releases/download/${version}/yq_linux_amd64" -o /usr/local/bin/yq && \
-            sudo chmod +x /usr/local/bin/yq && \
-            success "yq installed successfully" || warning "Failed to install yq"
+        # dive - Docker image layer analyzer
+        if ! command_exists dive; then
+            info "Installing dive..."
+            github_install "wagoodman/dive" "dive" "dive_{VERSION}_{OS}_{ARCH}.tar.gz"
         else
-            warning "Failed to install yq"
+            success "dive already installed"
         fi
-    else
-        success "yq already installed"
-    fi
 
-    # aws-vault - secure AWS credential manager
-    if ! command_exists aws-vault; then
-        info "Installing aws-vault..."
-        local version=$(curl -s https://api.github.com/repos/99designs/aws-vault/releases/latest | grep tag_name | cut -d '"' -f 4)
-        if [[ -n "$version" ]]; then
-            sudo curl -sL "https://github.com/99designs/aws-vault/releases/download/${version}/aws-vault-linux-amd64" -o /usr/local/bin/aws-vault && \
-            sudo chmod +x /usr/local/bin/aws-vault && \
-            success "aws-vault installed successfully" || warning "Failed to install aws-vault"
+        # yq - YAML processor
+        if ! command_exists yq; then
+            info "Installing yq..."
+            local version=$(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest | grep tag_name | cut -d '"' -f 4)
+            if [[ -n "$version" ]]; then
+                sudo curl -sL "https://github.com/mikefarah/yq/releases/download/${version}/yq_linux_amd64" -o /usr/local/bin/yq && \
+                sudo chmod +x /usr/local/bin/yq && \
+                success "yq installed successfully" || warning "Failed to install yq"
+            else
+                warning "Failed to install yq"
+            fi
         else
-            warning "Failed to install aws-vault"
+            success "yq already installed"
         fi
-    else
-        success "aws-vault already installed"
+
+        # aws-vault - secure AWS credential manager
+        if ! command_exists aws-vault; then
+            info "Installing aws-vault..."
+            local version=$(curl -s https://api.github.com/repos/99designs/aws-vault/releases/latest | grep tag_name | cut -d '"' -f 4)
+            if [[ -n "$version" ]]; then
+                sudo curl -sL "https://github.com/99designs/aws-vault/releases/download/${version}/aws-vault-linux-amd64" -o /usr/local/bin/aws-vault && \
+                sudo chmod +x /usr/local/bin/aws-vault && \
+                success "aws-vault installed successfully" || warning "Failed to install aws-vault"
+            else
+                warning "Failed to install aws-vault"
+            fi
+        else
+            success "aws-vault already installed"
+        fi
     fi
 
     success "Security and IaC tools installed"
@@ -623,14 +659,20 @@ install_nushell() {
 
     # Set up vendor autoload directory for third-party integrations
     info "Setting up nushell integrations..."
-    local vendor_dir="$HOME/.local/share/nushell/vendor/autoload"
+    # Use correct path for macOS vs Linux
+    if [ "$(uname)" = "Darwin" ]; then
+        local vendor_dir="$HOME/Library/Application Support/nushell/vendor/autoload"
+    else
+        local vendor_dir="$HOME/.local/share/nushell/vendor/autoload"
+    fi
     mkdir -p "$vendor_dir"
 
-    # Generate starship integration
-    if command_exists starship; then
-        info "Generating starship integration for nushell..."
-        starship init nu > "$vendor_dir/starship.nu"
-    fi
+    # Starship integration is configured directly in config.nu
+    # Skip vendor autoload generation to avoid parse errors
+    # if command_exists starship; then
+    #     info "Generating starship integration for nushell..."
+    #     starship init nu > "$vendor_dir/starship.nu"
+    # fi
 
     # Generate zoxide integration
     if command_exists zoxide; then
@@ -658,8 +700,16 @@ stow_dotfiles() {
     # Nushell creates default config on first run, which conflicts with stow
     if [ -d "$HOME/.config/nushell" ] && [ ! -L "$HOME/.config/nushell" ]; then
         warning "Existing nushell config directory found"
-        info "Backing up to ~/.config/nushell.backup..."
-        mv "$HOME/.config/nushell" "$HOME/.config/nushell.backup"
+
+        # Check if backup already exists
+        if [ -d "$HOME/.config/nushell.backup" ]; then
+            warning "Backup already exists at ~/.config/nushell.backup"
+            info "Removing auto-generated nushell config (stow will create symlink)..."
+            rm -rf "$HOME/.config/nushell"
+        else
+            info "Backing up to ~/.config/nushell.backup..."
+            mv "$HOME/.config/nushell" "$HOME/.config/nushell.backup"
+        fi
     fi
 
     # Call dotfiles.sh to handle stow operations

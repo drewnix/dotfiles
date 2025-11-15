@@ -2,25 +2,11 @@
 # Starship, zoxide, carapace, direnv, and mise integrations
 
 # Starship Prompt
-# Starship should be initialized via vendor autoload during bootstrap
-# The integration is generated with: starship init nu
-# This is just a fallback check
+# Starship is now configured in config.nu (loaded before autoload)
+# This file just ensures STARSHIP_SHELL environment variable is set correctly
 if (which starship | is-not-empty) {
-    let starship_vendor = ($nu.default-config-dir | path join ".." ".." "share" "nushell" "vendor" "autoload" "starship.nu")
-    if not ($starship_vendor | path exists) {
-        # If vendor autoload doesn't exist, manually set up starship
-        $env.STARSHIP_SHELL = "nu"
-
-        def create_left_prompt [] {
-            starship prompt --cmd-duration $env.CMD_DURATION_MS $'--status=($env.LAST_EXIT_CODE)'
-        }
-
-        $env.PROMPT_COMMAND = { || create_left_prompt }
-        $env.PROMPT_INDICATOR = ""
-        $env.PROMPT_INDICATOR_VI_INSERT = ": "
-        $env.PROMPT_INDICATOR_VI_NORMAL = "〉"
-        $env.PROMPT_MULTILINE_INDICATOR = "::: "
-    }
+    # Always set STARSHIP_SHELL to override any inherited value from parent shell
+    $env.STARSHIP_SHELL = "nu"
 }
 
 # Zoxide - Smart directory jumping

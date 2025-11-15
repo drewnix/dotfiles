@@ -182,6 +182,29 @@ $env.config = {
     float_precision: 2
 }
 
+# Starship Prompt Setup
+# This must be set early before autoload overrides it
+$env.STARSHIP_SHELL = "nu"
+$env.STARSHIP_SESSION_KEY = (random chars -l 16)
+$env.PROMPT_INDICATOR = ""
+$env.PROMPT_MULTILINE_INDICATOR = {|| ^starship prompt --continuation }
+
+$env.PROMPT_COMMAND = {||
+    let cmd_duration = ($env | get -o CMD_DURATION_MS | default 0)
+    let last_exit = ($env | get -o LAST_EXIT_CODE | default 0)
+    with-env {STARSHIP_SHELL: "nu"} {
+        ^starship prompt --cmd-duration $cmd_duration $"--status=($last_exit)" --terminal-width (term size).columns
+    }
+}
+
+$env.PROMPT_COMMAND_RIGHT = {||
+    let cmd_duration = ($env | get -o CMD_DURATION_MS | default 0)
+    let last_exit = ($env | get -o LAST_EXIT_CODE | default 0)
+    with-env {STARSHIP_SHELL: "nu"} {
+        ^starship prompt --right --cmd-duration $cmd_duration $"--status=($last_exit)" --terminal-width (term size).columns
+    }
+}
+
 # Transient prompt - simplify prompt after command execution
 $env.TRANSIENT_PROMPT_COMMAND = {|| "> " }
 $env.TRANSIENT_PROMPT_COMMAND_RIGHT = {|| "" }
