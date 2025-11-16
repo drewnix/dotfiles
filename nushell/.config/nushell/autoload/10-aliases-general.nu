@@ -89,7 +89,7 @@ def extract [file: string] {
 # ============================================================================
 
 def psg [pattern: string] {
-    ps | where name =~ $pattern or command =~ $pattern
+    ps -l | where name =~ $pattern or command =~ $pattern
 }
 
 def psme [] {
