@@ -55,7 +55,7 @@ install_plugin() {
 
 	# Try to add the plugin, capture output
 	local output
-	if output=$(ya pkg add "$plugin" 2>&1); then
+	if output=$($YA_CMD pkg add "$plugin" 2>&1); then
 		print_success "$description installed"
 	elif echo "$output" | grep -q "already exists"; then
 		print_success "$description already installed"
@@ -78,8 +78,14 @@ if ! command_exists yazi; then
 	exit 1
 fi
 
-# Check if ya command is available
-if ! command_exists ya; then
+# Check if ya command is available (handle snap installation)
+YA_CMD=""
+if command_exists ya; then
+	YA_CMD="ya"
+elif [ -x "/snap/yazi/current/ya" ]; then
+	YA_CMD="/snap/yazi/current/ya"
+	print_info "Using snap ya package manager"
+else
 	print_error "ya package manager not found. Please ensure yazi is properly installed."
 	exit 1
 fi
@@ -153,7 +159,7 @@ print_header "Installation Complete"
 
 echo ""
 print_info "Installed packages:"
-ya pkg list
+$YA_CMD pkg list
 
 echo ""
 print_success "All plugins installed successfully!"
@@ -162,7 +168,7 @@ print_info "Next steps:"
 echo "  1. Restart yazi to activate plugins"
 echo "  2. Run 'yazi' or 'y' to launch"
 echo "  3. Press '?' in yazi to see all keybindings"
-echo "  4. Use 'ya pkg upgrade' to update plugins"
+echo "  4. Use '$YA_CMD pkg upgrade' to update plugins"
 echo ""
 print_info "Configuration location: ~/.config/yazi/"
 print_info "Plugin location: ~/.config/yazi/packages/"

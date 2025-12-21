@@ -400,3 +400,7 @@ Session.vim
 # Vim backup files (disabled in config)
 *~
 *.bak
+# Yazi package manager (installed via ya pkg)
+yazi/.config/yazi/flavors/
+yazi/.config/yazi/plugins/
+yazi/.config/yazi/package.toml

@@ -340,6 +340,9 @@ install_pkg() {
 
     if command_exists "$pkg"; then
         success "$name installed successfully"
+        return 0
+    else
+        return 1
     fi
 }
 
@@ -481,7 +484,19 @@ install_k8s_tools() {
         # kube-capacity - resource capacity analysis
         if ! command_exists kube-capacity; then
             info "Installing kube-capacity..."
-            github_install "robscott/kube-capacity" "kube-capacity" "kube-capacity_{VERSION}_{OS}_{ARCH}.tar.gz"
+            local version=$(curl -s https://api.github.com/repos/robscott/kube-capacity/releases/latest | grep tag_name | cut -d '"' -f 4)
+            if [[ -n "$version" ]]; then
+                # kube-capacity uses v{version} and x86_64 naming convention
+                local arch="x86_64"
+                [[ $(uname -m) == "aarch64" ]] && arch="arm64"
+                curl -sL "https://github.com/robscott/kube-capacity/releases/download/${version}/kube-capacity_${version}_linux_${arch}.tar.gz" -o /tmp/kube-capacity.tar.gz && \
+                tar xzf /tmp/kube-capacity.tar.gz -C /tmp && \
+                sudo mv /tmp/kube-capacity /usr/local/bin/ && \
+                rm /tmp/kube-capacity.tar.gz && \
+                success "kube-capacity installed successfully" || warning "Failed to install kube-capacity"
+            else
+                warning "Failed to fetch kube-capacity version"
+            fi
         else
             success "kube-capacity already installed"
         fi
