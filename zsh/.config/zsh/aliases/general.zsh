@@ -116,8 +116,15 @@ fi
 
 # eza (modern ls replacement) - if installed
 if command -v eza &> /dev/null; then
-  # Basic ls replacements with icons and group directories first
-  alias ls='eza --icons --group-directories-first'
+  # Basic ls replacements with icons and group directories first.
+  # NOTE: eza's flags differ from GNU/BSD ls — e.g. `ls -t` is eza's --time-field
+  # selector (consumes the next arg) not sort-by-mtime, so `ls -t dir | head`
+  # silently prints nothing. That footgun repeatedly breaks AI-agent shells
+  # (Claude Code snapshots this alias into every tool call). So shadow bare `ls`
+  # with eza only in interactive/human shells; agents get the real ls.
+  if [[ -z "$AI_AGENT" && -z "$CLAUDECODE" ]]; then
+    alias ls='eza --icons --group-directories-first'
+  fi
   alias l='eza -l --icons --group-directories-first --git'
   alias la='eza -la --icons --group-directories-first --git'
   alias ll='eza -l --icons --group-directories-first --git'
