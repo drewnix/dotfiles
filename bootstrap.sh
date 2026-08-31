@@ -303,6 +303,31 @@ install_package_manager() {
     fi
 }
 
+# Is this package installed? Ask the package manager, not the PATH.
+#
+# command_exists "$pkg" looks for a BINARY named after the PACKAGE, and those differ often
+# enough to break the script outright:
+#   build-essential  ships no binary at all (metapackage)
+#   fd-find          ships fdfind
+#   bat              ships batcat
+#   p7zip-full       ships 7z
+#   poppler-utils    ships pdftoppm
+#   imagemagick      ships convert
+# Each of those made install_pkg return 1 after a perfectly successful install, and `set -e`
+# turned that into an abort. build-essential is the second package install_essentials
+# reaches, so bootstrap.sh could not run to completion on any apt system.
+pkg_installed() {
+    local pkg=$1
+    case $PKG_MANAGER in
+        apt)    dpkg -s "$pkg" >/dev/null 2>&1 && return 0 ;;
+        dnf)    rpm -q "$pkg" >/dev/null 2>&1 && return 0 ;;
+        pacman) pacman -Qi "$pkg" >/dev/null 2>&1 && return 0 ;;
+        brew)   brew list --formula "$pkg" >/dev/null 2>&1 && return 0 ;;
+    esac
+    # Fallback for unknown package managers, and for tools installed outside one.
+    command_exists "$pkg"
+}
+
 install_pkg() {
     local pkg=$1
     local name=${2:-$pkg}
@@ -312,7 +337,7 @@ install_pkg() {
         return 0
     fi
 
-    if command_exists "$pkg"; then
+    if pkg_installed "$pkg"; then
         success "$name already installed"
         return 0
     fi
@@ -338,12 +363,15 @@ install_pkg() {
             ;;
     esac
 
-    if command_exists "$pkg"; then
+    if pkg_installed "$pkg"; then
         success "$name installed successfully"
         return 0
-    else
-        return 1
     fi
+
+    # A tool that would not install is not a reason to abandon the whole bootstrap; the
+    # package manager already warned above. Returning non-zero here aborts under `set -e`.
+    warning "$name did not install; continuing"
+    return 0
 }
 
 # ╔══════════════════════════════════════════════════════════════╗
@@ -629,6 +657,39 @@ install_shell_tools() {
     success "Shell tools installed"
 }
 
+# Install nushell from the upstream prebuilt release.
+#
+# The cargo path below compiles nushell from source, which on a small cloud instance
+# (2 vCPU / 4 GB) runs for tens of minutes and can lose the linker to the OOM killer.
+# Upstream ships static x86_64 and aarch64 Linux builds; use them when they fit.
+install_nushell_release() {
+    local arch tag tgz tmp
+    case "$(uname -m)" in
+        x86_64)  arch="x86_64-unknown-linux-gnu" ;;
+        aarch64) arch="aarch64-unknown-linux-gnu" ;;
+        *)       warning "No nushell release build for $(uname -m)"; return 1 ;;
+    esac
+
+    tag=$(curl -fsSL https://api.github.com/repos/nushell/nushell/releases/latest \
+          | grep -m1 '"tag_name"' | cut -d'"' -f4)
+    [ -n "$tag" ] || { warning "Could not resolve the latest nushell release"; return 1; }
+
+    tgz="nu-$tag-$arch.tar.gz"
+    tmp=$(mktemp -d)
+    if curl -fsSL -o "$tmp/nu.tar.gz" \
+         "https://github.com/nushell/nushell/releases/download/$tag/$tgz" \
+       && tar -xzf "$tmp/nu.tar.gz" -C "$tmp" --strip-components=1; then
+        sudo install -m 0755 "$tmp"/nu /usr/local/bin/nu
+        for plugin in "$tmp"/nu_plugin_*; do
+            [ -f "$plugin" ] && sudo install -m 0755 "$plugin" /usr/local/bin/
+        done
+        rm -rf "$tmp"
+        return 0
+    fi
+    rm -rf "$tmp"
+    return 1
+}
+
 install_nushell() {
     info "Installing Nushell..."
 
@@ -639,13 +700,16 @@ install_nushell() {
         # Install nushell via package manager or cargo
         case $PKG_MANAGER in
             apt)
-                # For Ubuntu/Debian, use cargo for latest version
-                if command_exists cargo; then
+                # Prefer the prebuilt release: seconds instead of a source build, and no
+                # Rust toolchain required. Cargo remains the fallback where no release
+                # build exists for this architecture.
+                if install_nushell_release; then
+                    success "Nushell installed from the upstream release"
+                elif command_exists cargo; then
                     info "Installing nushell via cargo..."
                     cargo install nu --features=extra --locked
                 else
-                    warning "Cargo not found. Install Rust first or use package manager"
-                    return 1
+                    warning "Nushell not installed: no release build and no cargo"
                 fi
                 ;;
             dnf)
@@ -661,12 +725,13 @@ install_nushell() {
                 install_pkg "nushell"
                 ;;
             *)
-                warning "Unknown package manager, trying cargo..."
-                if command_exists cargo; then
+                warning "Unknown package manager, trying the release build then cargo..."
+                if install_nushell_release; then
+                    success "Nushell installed from the upstream release"
+                elif command_exists cargo; then
                     cargo install nu --features=extra --locked
                 else
-                    error "Could not install nushell. Install Rust/cargo first."
-                    return 1
+                    warning "Could not install nushell: no release build and no cargo"
                 fi
                 ;;
         esac
@@ -750,8 +815,15 @@ stow_dotfiles() {
 change_shell() {
     if [ "$SHELL" != "$(which zsh)" ]; then
         info "Changing default shell to zsh..."
-        chsh -s "$(which zsh)"
-        success "Default shell changed to zsh (restart your terminal)"
+        # chsh authenticates through PAM, so it fails on an account with no password —
+        # which is every cloud-init-provisioned user. This is the last step in main(),
+        # so aborting here under `set -e` discards nothing, but it does make a completed
+        # run look like a failed one to anything checking the exit code.
+        if chsh -s "$(which zsh)"; then
+            success "Default shell changed to zsh (restart your terminal)"
+        else
+            warning "Could not change the shell; run: sudo chsh -s $(which zsh) $USER"
+        fi
     else
         success "Zsh is already your default shell"
     fi
