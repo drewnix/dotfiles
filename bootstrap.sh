@@ -37,7 +37,9 @@ CORE_PACKAGES="stow git zsh curl wget"
 BUILD_PACKAGES="build-essential"
 
 # Modern CLI tools - enhanced alternatives to classic tools
-MODERN_CLI_PACKAGES="fzf ripgrep fd bat eza yazi zoxide tmux"
+# yazi is installed separately, via install_with_fallback — see install_shell_tools.
+# There is no yazi in Debian/Ubuntu, so it needs the upstream package as a fallback.
+MODERN_CLI_PACKAGES="fzf ripgrep fd bat eza zoxide tmux"
 
 # Media processing tools - for yazi file previews
 MEDIA_PACKAGES="jq ffmpeg p7zip poppler imagemagick chafa ueberzug"
@@ -118,7 +120,11 @@ install_package_list() {
     local packages=$1
     for pkg in $packages; do
         local pkg_name=$(get_pkg_name "$pkg")
-        install_pkg "$pkg_name" "$pkg"
+        # One unavailable package is not a reason to abandon the bootstrap, and under
+        # `set -e` a non-zero return here would do exactly that. The tolerance belongs at
+        # this call site rather than inside install_pkg, which other callers rely on to
+        # tell them the truth.
+        install_pkg "$pkg_name" "$pkg" || warning "$pkg unavailable here; continuing"
     done
 }
 
@@ -368,10 +374,11 @@ install_pkg() {
         return 0
     fi
 
-    # A tool that would not install is not a reason to abandon the whole bootstrap; the
-    # package manager already warned above. Returning non-zero here aborts under `set -e`.
-    warning "$name did not install; continuing"
-    return 0
+    # Report the failure truthfully. install_with_fallback tests this return value to
+    # decide whether to run its fallback, so swallowing it here silently disables every
+    # fallback install in the script. Callers that must not abort tolerate it themselves —
+    # see install_package_list.
+    return 1
 }
 
 # ╔══════════════════════════════════════════════════════════════╗
@@ -641,6 +648,11 @@ install_security_tools() {
 install_shell_tools() {
     info "Installing shell enhancements..."
 
+    # yazi — no Debian/Ubuntu package exists, so the fallback carries Linux. dnf, pacman
+    # and brew all ship yazi, and install_pkg tries the package manager first, so those
+    # platforms never reach install_yazi_release.
+    install_with_fallback "yazi" "yazi" 'install_yazi_release'
+
     # Starship prompt
     install_with_fallback "starship" "starship" \
         'curl -sS https://starship.rs/install.sh | sh -s -- -y'
@@ -662,6 +674,27 @@ install_shell_tools() {
 # The cargo path below compiles nushell from source, which on a small cloud instance
 # (2 vCPU / 4 GB) runs for tens of minutes and can lose the linker to the OOM killer.
 # Upstream ships static x86_64 and aarch64 Linux builds; use them when they fit.
+# Install yazi from the upstream .deb. A .deb rather than the .zip on purpose: it
+# registers with dpkg, so pkg_installed() sees it on later runs and skips the download.
+install_yazi_release() {
+    local arch tmp
+    case "$(uname -m)" in
+        x86_64)  arch="x86_64-unknown-linux-gnu" ;;
+        aarch64) arch="aarch64-unknown-linux-gnu" ;;
+        *)       warning "No yazi release build for $(uname -m)"; return 1 ;;
+    esac
+
+    tmp=$(mktemp -d)
+    if curl -fsSL -o "$tmp/yazi.deb" \
+         "https://github.com/sxyazi/yazi/releases/latest/download/yazi-$arch.deb" \
+       && sudo apt install -y "$tmp/yazi.deb"; then
+        rm -rf "$tmp"
+        return 0
+    fi
+    rm -rf "$tmp"
+    return 1
+}
+
 install_nushell_release() {
     local arch tag tgz tmp
     case "$(uname -m)" in
