@@ -66,8 +66,8 @@ suppress_preload = true
 [plugin]
 # Git integration - shows file status in linemode
 prepend_fetchers = [
-  { id = "git", name = "*", run = "git" },
-  { id = "git", name = "*/", run = "git" },
+  { id = "git", url = "*", run = "git", group = "git" },
+  { id = "git", url = "*/", run = "git", group = "git" },
 ]
 
 # Custom previewers for enhanced file type support
