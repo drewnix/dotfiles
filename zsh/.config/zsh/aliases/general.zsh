@@ -103,9 +103,10 @@ elif command -v pbcopy &> /dev/null; then
   alias clipout='pbpaste'
 fi
 
-# Colorize cat output with bat (if installed)
+# bat under its own name only. `cat` is never shadowed: bat pages, decorates
+# and rewrites what it prints depending on the terminal, and agent shells
+# source this file. Same rule as ls and find above.
 if command -v bat &> /dev/null; then
-  alias cat='bat'
   alias catn='bat --style=plain'
 fi
 

@@ -292,11 +292,10 @@ if (which xclip | is-not-empty) {
 }
 
 # ============================================================================
-# Enhanced cat with bat
+# bat under its own name; cat stays cat (same rule as ls and find in zsh)
 # ============================================================================
 
 if (which bat | is-not-empty) {
-    alias cat = bat
     alias catn = bat --style=plain
 }
 
