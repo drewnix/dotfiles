@@ -114,17 +114,13 @@ if command -v fd &> /dev/null; then
   alias find='fd'
 fi
 
-# eza (modern ls replacement) - if installed
+# eza (modern ls replacement) - if installed, under its OWN names only.
+# `ls` is never shadowed: eza's flags differ from ls (`ls -t dir | head` is
+# eza's --time-field and prints nothing, exit 0), and every agent shell —
+# Claude Code, Codex, Cursor, a script over ssh — sources this file. An
+# environment-variable guard was tried (2026-07) and only covered the agents
+# that set the variable. Plain `ls` is `ls -G` / `--color=auto` above.
 if command -v eza &> /dev/null; then
-  # Basic ls replacements with icons and group directories first.
-  # NOTE: eza's flags differ from GNU/BSD ls — e.g. `ls -t` is eza's --time-field
-  # selector (consumes the next arg) not sort-by-mtime, so `ls -t dir | head`
-  # silently prints nothing. That footgun repeatedly breaks AI-agent shells
-  # (Claude Code snapshots this alias into every tool call). So shadow bare `ls`
-  # with eza only in interactive/human shells; agents get the real ls.
-  if [[ -z "$AI_AGENT" && -z "$CLAUDECODE" ]]; then
-    alias ls='eza --icons --group-directories-first'
-  fi
   alias l='eza -l --icons --group-directories-first --git'
   alias la='eza -la --icons --group-directories-first --git'
   alias ll='eza -l --icons --group-directories-first --git'

@@ -838,7 +838,7 @@ eza --tree                          # Tree view
 eza --git                           # Show git status
 ```
 
-**Your aliases:** `ls`, `ll`, `la`, `lt` all use eza
+**Your aliases:** `ll`, `la`, `l`, `lt`, `lsa`, `lsize`, `tree` use eza. Plain `ls` is the real `ls` on purpose: eza's flags differ (`ls -t` is eza's `--time-field`), and agent shells source these aliases.
 
 ---
 
