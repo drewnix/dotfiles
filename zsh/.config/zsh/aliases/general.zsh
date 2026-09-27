@@ -38,9 +38,9 @@ alias mv='mv -i'    # confirm before overwrite
 alias rm='rm -i'    # confirm before delete
 alias mkdir='mkdir -p' # create parent directories
 
-# Find aliases
-alias fd='find . -type d -name'
+# Find shortcuts (fd itself is left alone: it is its own command)
 alias ff='find . -type f -name'
+alias fdir='find . -type d -name'
 
 # Process management
 alias psg='ps aux | grep -v grep | grep -i -e VSZ -e'
@@ -107,11 +107,6 @@ fi
 if command -v bat &> /dev/null; then
   alias cat='bat'
   alias catn='bat --style=plain'
-fi
-
-# Better find with fd (if installed)
-if command -v fd &> /dev/null; then
-  alias find='fd'
 fi
 
 # eza (modern ls replacement) - if installed, under its OWN names only.
