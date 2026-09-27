@@ -38,9 +38,9 @@ alias mv='mv -i'    # confirm before overwrite
 alias rm='rm -i'    # confirm before delete
 alias mkdir='mkdir -p' # create parent directories
 
-# Find aliases
-alias fd='find . -type d -name'
+# Find shortcuts (fd itself is left alone: it is its own command)
 alias ff='find . -type f -name'
+alias fdir='find . -type d -name'
 
 # Process management
 alias psg='ps aux | grep -v grep | grep -i -e VSZ -e'
@@ -109,15 +109,13 @@ if command -v bat &> /dev/null; then
   alias catn='bat --style=plain'
 fi
 
-# Better find with fd (if installed)
-if command -v fd &> /dev/null; then
-  alias find='fd'
-fi
-
-# eza (modern ls replacement) - if installed
+# eza (modern ls replacement) - if installed, under its OWN names only.
+# `ls` is never shadowed: eza's flags differ from ls (`ls -t dir | head` is
+# eza's --time-field and prints nothing, exit 0), and every agent shell —
+# Claude Code, Codex, Cursor, a script over ssh — sources this file. An
+# environment-variable guard was tried (2026-07) and only covered the agents
+# that set the variable. Plain `ls` is `ls -G` / `--color=auto` above.
 if command -v eza &> /dev/null; then
-  # Basic ls replacements with icons and group directories first
-  alias ls='eza --icons --group-directories-first'
   alias l='eza -l --icons --group-directories-first --git'
   alias la='eza -la --icons --group-directories-first --git'
   alias ll='eza -l --icons --group-directories-first --git'
