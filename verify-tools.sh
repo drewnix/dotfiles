@@ -123,11 +123,6 @@ check_tool "steampipe" "steampipe --version 2>&1 | head -1" "SQL interface for c
 check_tool "docker" "docker --version 2>&1 | head -1" "Container platform"
 echo ""
 
-echo -e "${BLUE}Version Manager:${NC}"
-echo ""
-check_tool "mise" "mise --version 2>&1 | head -1" "Fast version manager"
-echo ""
-
 echo -e "${BLUE}Shell Tools:${NC}"
 echo ""
 check_tool "zsh" "zsh --version 2>&1 | head -1" "Z Shell"

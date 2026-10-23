@@ -4,7 +4,6 @@ Quick reference for all tools in this dotfiles repository with installation stat
 
 **Legend:**
 - ✅ **Installed** - Tool is installed by bootstrap.sh
-- 📦 **Via mise** - Tool is managed by mise version manager
 - 🔄 **Planned** - Tool will be added soon
 - 📋 **Manual** - Requires manual installation
 
@@ -17,7 +16,7 @@ Quick reference for all tools in this dotfiles repository with installation stat
 - [Container Tools](#container-tools)
 - [Security & Scanning](#security--scanning)
 - [Cloud Provider CLIs](#cloud-provider-clis)
-- [Version Management](#version-management)
+- [Environment Management](#environment-management)
 - [Shell Enhancements](#shell-enhancements)
 - [Modern CLI Tools](#modern-cli-tools)
 - [Development Tools](#development-tools)
@@ -29,7 +28,7 @@ Quick reference for all tools in this dotfiles repository with installation stat
 
 ### kubectl
 
-**Status:** ✅ Installed + 📦 Via mise
+**Status:** ✅ Installed
 **What:** Official Kubernetes CLI - interact with clusters
 **When to use:** All Kubernetes operations
 **Docs:** https://kubernetes.io/docs/reference/kubectl/
@@ -79,7 +78,7 @@ kubectl apply -f manifest.yaml     # Apply configuration
 
 ### helm
 
-**Status:** ✅ Installed + 📦 Via mise
+**Status:** ✅ Installed
 **What:** Kubernetes package manager
 **When to use:** Installing applications, managing releases, templating manifests
 **Docs:** https://helm.sh/docs/
@@ -267,7 +266,7 @@ node-1        60%           80%         70%              85%
 
 ### terraform
 
-**Status:** ✅ Installed + 📦 Via mise
+**Status:** ✅ Installed
 **What:** Infrastructure as Code tool for provisioning cloud resources
 **When to use:** Creating, updating, destroying cloud infrastructure
 **Docs:** https://terraform.io/docs
@@ -508,7 +507,7 @@ CVE-2021-67890 pkg:golang/github.com/example/lib
 
 ### AWS CLI
 
-**Status:** ✅ Installed + 📦 Via mise
+**Status:** ✅ Installed
 **What:** Official AWS command line interface
 **When to use:** All AWS operations
 **Docs:** https://docs.aws.amazon.com/cli/
@@ -606,48 +605,11 @@ gcloud container clusters list      # List GKE clusters
 
 ---
 
-## Version Management
-
-### mise
-
-**Status:** ✅ Installed
-**What:** Fast polyglot version manager (asdf replacement, 10-100x faster)
-**When to use:** Managing tool versions (Node.js, Python, Terraform, kubectl, etc.)
-**Why better than asdf:** Written in Rust, much faster, built-in tools
-**Docs:** https://mise.jdx.dev/
-
-**Common commands:**
-```bash
-mise use --global nodejs@20         # Install globally
-mise use nodejs@20                  # Install for current directory
-mise ls                             # List installed versions
-mise ls-remote nodejs               # Available versions
-mise current                        # Show active versions
-mise upgrade                        # Update all tools
-```
-
-**Managed in this repo:**
-- nodejs 20.11.0
-- python 3.12.1
-- golang 1.21.6
-- rust 1.75.0
-- terraform latest
-- kubectl 1.29.0
-- helm 3.14.0
-- awscli 2.15.0
-
-**Config:** `~/.config/mise/config.toml` and `.tool-versions`
-
-**Features enabled:**
-- Auto-install missing tools
-- Legacy version file support (.node-version, .python-version, etc.)
-- 4 parallel jobs for faster installation
-
----
+## Environment Management
 
 ### direnv
 
-**Status:** 📦 Via mise
+**Status:** 📋 Manual (`brew install direnv`)
 **What:** Load and unload environment variables based on directory
 **When to use:** Per-project environment variables
 **Docs:** https://direnv.net/
@@ -684,7 +646,7 @@ direnv allow
 - AWS profile and region
 - GCP project
 - Docker context
-- Programming language versions (from mise)
+- Programming language versions
 - Command duration
 - Current time
 
@@ -1021,8 +983,8 @@ kubectl apply -f deployment.yaml
 **...install kubectl plugins**
 → `kubectl krew search` then `kubectl krew install plugin-name`
 
-**...switch between tool versions**
-→ `mise use nodejs@20` or add to `.tool-versions`
+**...switch Node.js versions**
+→ `fnm use 20` or add a `.node-version` file
 
 ---
 
@@ -1036,7 +998,7 @@ kubectl apply -f deployment.yaml
 **Containers:** docker, docker-compose
 **Shell:** starship, zsh-autosuggestions, zsh-syntax-highlighting
 **CLI Tools:** fzf, ripgrep, fd, bat, eza, yazi, zoxide, jq
-**Development:** git, vim, tmux, mise
+**Development:** git, vim, tmux
 
 ### ✅ Newly Added (Top 10 Recommendations)
 

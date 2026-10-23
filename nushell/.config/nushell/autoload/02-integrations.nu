@@ -1,5 +1,5 @@
 # Third-Party Tool Integrations
-# Starship, zoxide, carapace, direnv, and mise integrations
+# Starship, zoxide, carapace, and direnv integrations
 
 # Starship Prompt
 # Starship is now configured in config.nu (loaded before autoload)
@@ -68,35 +68,6 @@ if (which direnv | is-not-empty) {
         # Handle PATH conversion if needed
         if 'ENV_CONVERSIONS' in $env and 'PATH' in $env.ENV_CONVERSIONS {
             $env.PATH = do $env.ENV_CONVERSIONS.PATH.from_string $env.PATH
-        }
-    })
-}
-
-# Mise - Version manager (replaces asdf, much faster)
-# Activate mise for automatic version switching
-if (which mise | is-not-empty) {
-    # Mise activation - this makes mise shims available
-    $env.PATH = ($env.PATH | prepend ($env.HOME | path join ".local" "share" "mise" "shims"))
-
-    # Hook for automatic version switching when changing directories
-    $env.config.hooks.env_change.PWD = ($env.config.hooks.env_change.PWD | append {|before, after|
-        if (which mise | is-empty) {
-            return
-        }
-
-        # Run mise hook to activate tools for current directory
-        mise hook-env -s nu
-        | lines
-        | each { |line|
-            if ($line | str starts-with '$env.') {
-                # Parse and execute environment variable assignments
-                let parts = ($line | parse '$env.{var} = {value}')
-                if ($parts | is-not-empty) {
-                    let var = ($parts | get var.0)
-                    let value = ($parts | get value.0 | str trim --char '"')
-                    load-env { $var: $value }
-                }
-            }
         }
     })
 }

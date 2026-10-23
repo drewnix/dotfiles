@@ -41,7 +41,6 @@ cloud-native development and DevOps workflows based around Kubernetes, Terraform
 
 - **Starship** - Beautiful, fast, customizable prompt
 - **fzf** - Fuzzy finder integration for contexts, files, history
-- **mise** - Lightning-fast version manager (10-100x faster than asdf)
 - **eza** - Modern ls replacement with icons, git integration, and smart directory grouping
 - **bat** - Syntax-highlighted cat alternative
 - **fd** - Fast and user-friendly find replacement
@@ -76,7 +75,7 @@ cd ~/dotfiles
 The bootstrap script will:
 
 - Install essential tools (kubectl, terraform, aws-cli, gcloud, docker tools, etc.)
-- Install modern CLI enhancements (starship, fzf, bat, eza, mise, etc.)
+- Install modern CLI enhancements (starship, fzf, bat, eza, etc.)
 - Symlink dotfiles using GNU Stow
 - Set up ZSH as your default shell
 
@@ -136,9 +135,6 @@ dotfiles/
 │   └── .aws/config
 ├── starship/                     # Starship prompt config
 │   └── .config/starship.toml
-├── mise/                         # mise version manager
-│   ├── .tool-versions
-│   └── .config/mise/config.toml
 ├── bootstrap.sh                  # Automated installation script
 ├── dotfiles.sh                   # GNU Stow installer
 └── README.md                     # This file
@@ -167,7 +163,7 @@ Nushell provides a modern, structured data-first shell experience with full feat
 
 **Autoload Architecture** - Modern configuration using numbered autoload files:
 - **01-environment.nu** - PATH, environment variables, core settings
-- **02-integrations.nu** - Starship, zoxide, carapace, direnv, mise
+- **02-integrations.nu** - Starship, zoxide, carapace, direnv
 - **10-aliases-general.nu** - Navigation, file ops, utilities
 - **11-aliases-git.nu** - Git workflows (identical to ZSH)
 - **12-aliases-k8s.nu** - 200+ Kubernetes aliases and helpers
@@ -220,29 +216,6 @@ Configured to show:
 - Time
 
 Customize: `~/.config/starship.toml`
-
-### mise Version Manager
-
-```bash
-# Install tools globally
-mise use --global nodejs@20 python@3.12 terraform@latest
-
-# Or use .tool-versions file in projects
-echo "nodejs 20.11.0" >> .tool-versions
-echo "terraform latest" >> .tool-versions
-mise install
-
-# List available tools
-mise ls-remote nodejs
-mise ls-remote terraform
-
-# Built-in tools (no plugins needed):
-# - nodejs, python, golang, rust, java, ruby, php
-# - terraform, kubectl, helm
-# - And many more!
-```
-
-Configure: `~/.config/mise/config.toml`
 
 ## Alias Examples
 
@@ -379,37 +352,15 @@ The `bootstrap.sh` script installs these tools automatically. For manual install
 ```bash
 # macOS
 brew install kubectl helm terraform awscli google-cloud-sdk docker \
-  kubectx k9s stern starship fzf bat eza fd ripgrep mise
+  kubectx k9s stern starship fzf bat eza fd ripgrep
 
 # Ubuntu/Debian
 # kubectl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-# mise (version manager)
-curl https://mise.run | sh
-
 # Starship
 curl -sS https://starship.rs/install.sh | sh
-```
-
-### Version Manager (mise)
-
-```bash
-# Install mise
-curl https://mise.run | sh
-
-# Or with homebrew
-brew install mise
-
-# Install common tools
-mise use --global nodejs@lts python@latest golang@latest terraform@latest
-
-# For project-specific versions, use .tool-versions file
-echo "nodejs 20.11.0" >> ~/myproject/.tool-versions
-echo "terraform 1.7.0" >> ~/myproject/.tool-versions
-cd ~/myproject
-mise install  # Installs all tools from .tool-versions
 ```
 
 ## Customization
@@ -523,38 +474,24 @@ rm ~/.zcompdump
 autoload -U compinit && compinit
 ```
 
-### mise Not Found
-
-```bash
-# Add mise to PATH
-export PATH="$HOME/.local/bin:$PATH"
-
-# Or install globally
-curl https://mise.run | sh
-```
-
 ## Updating
 
 ```bash
 cd ~/dotfiles
 git pull origin main
 ./dotfiles.sh --all
-
-# Update mise-managed tools
-mise upgrade
 ```
 
 ## Uninstalling
 
 ```bash
 cd ~/dotfiles
-stow -D zsh git tmux vim aws starship mise
+stow -D zsh git tmux vim aws starship
 ```
 
 ## Acknowledgments
 
 - [Dotfiles community](https://dotfiles.github.io/)
 - [Starship](https://starship.rs/)
-- [mise](https://mise.jdx.dev/) - Amazing asdf replacement
 - [GNU Stow](https://www.gnu.org/software/stow/)
 - All the amazing open-source tools that make this possible

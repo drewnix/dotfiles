@@ -31,13 +31,6 @@ if [ -d "$HOME/.cargo/bin" ]; then
   export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
-# mise version manager (replaces asdf, much faster)
-if command -v mise &> /dev/null; then
-  eval "$(mise activate zsh)"
-elif [ -d "$HOME/.local/bin/mise" ]; then
-  eval "$($HOME/.local/bin/mise activate zsh)"
-fi
-
 # krew - kubectl plugin manager
 if [ -d "${HOME}/.krew/bin" ]; then
   export PATH="${HOME}/.krew/bin:$PATH"
