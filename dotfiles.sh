@@ -29,7 +29,6 @@ ALL_PACKAGES=(
     aws
     bash
     starship
-    mise
     k9s
     claude
     steampipe
@@ -44,7 +43,6 @@ DEFAULT_PACKAGES=(
     vim
     yazi
     starship
-    mise
     k9s
     steampipe
     nushell

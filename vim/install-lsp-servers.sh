@@ -219,7 +219,7 @@ if command_exists npm; then
     fi
 else
     print_warning "Node.js/npm not found - skipping Node.js LSP servers"
-    print_info "Install Node.js via mise or system package manager to enable:"
+    print_info "Install Node.js via fnm or Homebrew to enable:"
     print_info "  - pyright (Python LSP)"
     print_info "  - typescript-language-server (TypeScript/JavaScript LSP)"
     print_info "  - bash-language-server (Shell script LSP)"
@@ -248,7 +248,7 @@ if command_exists pip3 || command_exists pip; then
     ((INSTALLED_COUNT+=4))
 else
     print_warning "Python/pip not found - skipping Python tools"
-    print_info "Install Python via mise or system package manager"
+    print_info "Install Python via Homebrew"
     ((SKIPPED_COUNT+=4))
 fi
 
@@ -288,7 +288,7 @@ if command_exists go; then
     print_info "Ensure \$GOPATH/bin is in your PATH (usually ~/go/bin)"
 else
     print_warning "Go not found - skipping Go tools"
-    print_info "Install Go via mise or system package manager to enable:"
+    print_info "Install Go via Homebrew to enable:"
     print_info "  - gopls (Go LSP server)"
     print_info "  - golint (Go linter)"
     ((SKIPPED_COUNT+=2))
@@ -334,7 +334,7 @@ if command_exists rustup; then
     fi
 else
     print_warning "Rust/rustup not found - skipping Rust components"
-    print_info "Install Rust via mise or rustup to enable:"
+    print_info "Install Rust via rustup to enable:"
     print_info "  - rustfmt (Rust formatter)"
     print_info "  - rust-analyzer (Rust LSP server)"
     ((SKIPPED_COUNT+=2))

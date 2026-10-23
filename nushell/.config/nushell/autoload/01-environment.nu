@@ -110,12 +110,3 @@ $env.HISTCONTROL = "ignoredups:ignorespace"
 # Set locale (adjust as needed)
 $env.LANG = "en_US.UTF-8"
 $env.LC_ALL = "en_US.UTF-8"
-
-# Mise (version manager) configuration
-# Note: mise activation happens in 02-integrations.nu
-if ("MISE_DATA_DIR" not-in $env) {
-    $env.MISE_DATA_DIR = ($env.XDG_DATA_HOME | path join "mise")
-}
-if ("MISE_CONFIG_DIR" not-in $env) {
-    $env.MISE_CONFIG_DIR = ($env.XDG_CONFIG_HOME | path join "mise")
-}

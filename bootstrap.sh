@@ -662,10 +662,6 @@ install_shell_tools() {
     install_zsh_plugin "zsh-syntax-highlighting" "https://github.com/zsh-users/zsh-syntax-highlighting"
     install_zsh_plugin "fzf-tab" "https://github.com/Aloxaf/fzf-tab"
 
-    # mise version manager (replaces asdf - much faster!)
-    install_with_fallback "mise" "mise" \
-        'curl https://mise.run | sh && export PATH="$HOME/.local/bin:$PATH"'
-
     success "Shell tools installed"
 }
 

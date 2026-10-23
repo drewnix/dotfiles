@@ -17,13 +17,12 @@ Welcome! This guide will help you learn and master all the tools, aliases, and w
 7. [Docker & Containers](#docker--containers)
 8. [Git Workflows](#git-workflows)
 9. [General Utilities](#general-utilities)
-10. [Version Management with mise](#version-management-with-mise)
-11. [Starship Prompt](#starship-prompt)
-12. [Tmux Terminal Multiplexer](#tmux-terminal-multiplexer)
-13. [Claude Code Integration](#claude-code-integration)
-14. [Productivity Tips](#productivity-tips)
-15. [Real-World Workflows](#real-world-workflows)
-16. [Troubleshooting](#troubleshooting)
+10. [Starship Prompt](#starship-prompt)
+11. [Tmux Terminal Multiplexer](#tmux-terminal-multiplexer)
+12. [Claude Code Integration](#claude-code-integration)
+13. [Productivity Tips](#productivity-tips)
+14. [Real-World Workflows](#real-world-workflows)
+15. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -1674,225 +1673,6 @@ histexport audit.txt   # Custom filename
 
 ---
 
-## Version Management with mise
-
-### What is mise?
-
-`mise` is a **fast** (10-100x faster than asdf) version manager for:
-
-- Programming languages (Node.js, Python, Go, Ruby, etc.)
-- CLI tools (Terraform, kubectl, Helm, etc.)
-- Any tool with an asdf plugin
-
-### Basic Usage
-
-**Install tools globally:**
-
-```bash
-# Install latest version
-mise use --global nodejs@latest
-mise use --global python@latest
-
-# Install specific version
-mise use --global nodejs@20.11.0
-mise use --global terraform@1.7.0
-
-# Install LTS version
-mise use --global nodejs@lts
-
-# Multiple tools at once
-mise use --global nodejs@20 python@3.12 golang@1.21
-```
-
-**List available tools:**
-
-```bash
-# Built-in tools (no plugins needed)
-mise plugins ls-remote
-# nodejs, python, golang, rust, terraform, kubectl, helm, etc.
-
-# Available versions
-mise ls-remote nodejs
-mise ls-remote terraform
-mise ls-remote python
-```
-
-**View installed tools:**
-
-```bash
-# Show all installed tools
-mise ls
-
-# Show tools in current directory
-mise current
-```
-
-### Project-Specific Versions
-
-**Using .tool-versions file:**
-
-```bash
-# In your project directory
-cd ~/myproject
-
-# Create .tool-versions
-cat > .tool-versions << EOF
-nodejs 20.11.0
-terraform 1.7.0
-python 3.12.1
-EOF
-
-# Install all tools from .tool-versions
-mise install
-
-# mise automatically switches versions when you cd into the directory!
-cd ~/myproject        # Switches to nodejs 20.11.0
-cd ~/other-project    # Switches to different versions
-```
-
-**Quick project setup:**
-
-```bash
-# Set versions for current directory
-cd ~/myproject
-mise use nodejs@20
-mise use terraform@1.7.0
-
-# This creates .tool-versions automatically
-cat .tool-versions
-# nodejs 20.11.0
-# terraform 1.7.0
-```
-
-### mise Configuration
-
-**Global config:** `~/.config/mise/config.toml`
-
-```toml
-# Already configured in your dotfiles
-
-[settings]
-jobs = 4                      # Parallel downloads
-auto_install = true           # Auto-install missing tools
-legacy_version_file = true    # Read .node-version, etc.
-
-# Define global tools
-[tools]
-nodejs = "20.11.0"
-python = "3.12.1"
-terraform = "latest"
-```
-
-**Environment variables:**
-
-```bash
-# mise can manage env vars too
-mise set NODE_ENV=development
-mise set DATABASE_URL=postgres://localhost/mydb
-
-# View env vars
-mise env
-```
-
-### Common Workflows
-
-**Node.js project:**
-
-```bash
-cd ~/my-node-app
-
-# Use specific Node version
-mise use nodejs@20.11.0
-
-# Install dependencies
-npm install
-
-# Node version is automatically used
-node --version
-# v20.11.0
-```
-
-**Python project:**
-
-```bash
-cd ~/my-python-app
-
-# Use Python 3.12
-mise use python@3.12
-
-# Create virtual env (mise + venv work together)
-python -m venv venv
-source venv/bin/activate
-
-# Python version is automatically used
-python --version
-# Python 3.12.1
-```
-
-**Multi-language project:**
-
-```bash
-cd ~/fullstack-app
-
-# Set multiple versions
-mise use nodejs@20 python@3.12 golang@1.21
-
-# Verify
-mise current
-# nodejs   20.11.0  ~/.tool-versions
-# python   3.12.1   ~/.tool-versions
-# golang   1.21.6   ~/.tool-versions
-```
-
-### Updating Tools
-
-```bash
-# Update mise itself
-mise self-update
-
-# Update all tools to latest
-mise upgrade
-
-# Update specific tool
-mise upgrade nodejs
-
-# List outdated tools
-mise outdated
-```
-
-### Advanced Features
-
-**Tasks (like npm scripts):**
-
-```bash
-# Define in .mise.toml
-cat > .mise.toml << 'EOF'
-[tasks.test]
-run = "npm test"
-
-[tasks.deploy]
-run = "terraform apply -auto-approve"
-EOF
-
-# Run tasks
-mise run test
-mise run deploy
-```
-
-**Aliases:**
-
-```bash
-# Create aliases in config.toml
-[aliases.nodejs]
-lts = "20"
-latest = "21"
-
-# Use aliases
-mise use nodejs@lts
-```
-
----
-
 ## Starship Prompt
 
 ### What You See
@@ -1974,9 +1754,9 @@ All these are already configured:
 - **aws** - AWS profile/region
 - **gcloud** - GCP project
 - **docker_context** - Docker context
-- **python** - Python version (from mise)
-- **nodejs** - Node version (from mise)
-- **golang** - Go version (from mise)
+- **python** - Python version
+- **nodejs** - Node version
+- **golang** - Go version
 - **cmd_duration** - How long last command took
 - **time** - Current time (right side)
 
@@ -3183,22 +2963,6 @@ cd ~/dotfiles
 ./bootstrap.sh
 ```
 
-**mise not activating:**
-
-```bash
-# Check if mise installed
-which mise
-
-# Check activation in zshrc
-grep mise ~/.zshrc
-
-# Manual activation
-eval "$(mise activate zsh)"
-
-# Verify
-mise --version
-```
-
 **Starship not loading:**
 
 ```bash
@@ -3459,7 +3223,7 @@ tfvalidate-all         # Validate all
 ### Month 2: Advanced Workflows
 
 **Week 5: Docker & Containers**
-**Week 6: mise & Version Management**
+**Week 6: Starship & Prompt Customization**
 **Week 7: Tmux & Productivity**
 **Week 8: Real-world scenarios**
 
@@ -3481,7 +3245,6 @@ This guide covered everything in your dotfiles setup:
 
 **Advanced Features:**
 
-- ✅ mise version management
 - ✅ Starship prompt customization
 - ✅ Tmux multiplexing
 - ✅ Claude Code integration
